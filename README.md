@@ -89,4 +89,8 @@ To run this portfolio locally on your machine:
 
 ---
 
-© 2026 Johnty Paul Joseph. All rights reserved.
+## 📄 License & Copyright
+
+© 2026 **Johnty Paul Joseph**. All rights reserved.
+
+All visual designs, product architecture case studies, UI mockups, brand assets, and code contained within this repository are the proprietary intellectual property of Johnty Paul Joseph. Unauthorized copying, modification, republication, or distribution without prior written permission is strictly prohibited. See [LICENSE](LICENSE) for full details.
