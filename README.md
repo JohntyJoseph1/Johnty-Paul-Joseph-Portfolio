@@ -21,7 +21,6 @@
 | **Digylax HR & Workforce SaaS** | Enterprise B2B SaaS | Complete UX architecture for an 11-module HRMS suite covering payroll automation, attendance geo-fencing, asset tracking, and role-based access. |
 | **Robuster Ride** | Mobility & EV Fleet | High-conversion ride-hailing and fleet management mobile application focusing on rider micro-interactions, driver dashboards, and route tracking. |
 | **Travel by Toshiv** | Luxury Concierge & Travel | Immersive responsive web portal crafted for high-end bespoke travel itineraries with fluid transitions and multi-currency booking flow. |
-| **Enterprise Design Systems** | Design Systems & Tokens | Reusable, accessible Figma token library mapped 1:1 with frontend components for seamless designer-to-developer handoff. |
 
 ---
 
