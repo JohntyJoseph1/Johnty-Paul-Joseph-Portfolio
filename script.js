@@ -25,6 +25,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- Collaborate Button: Smooth Scroll & Form Focus ---
+  const navCollaborateBtn = document.getElementById('navCollaborateBtn');
+  if (navCollaborateBtn) {
+    navCollaborateBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const contactSec = document.getElementById('contact');
+      if (contactSec) {
+        contactSec.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+          const nameInput = document.getElementById('fName');
+          const briefForm = document.getElementById('briefForm');
+          if (nameInput) {
+            nameInput.focus();
+          }
+          if (briefForm) {
+            briefForm.classList.remove('form-highlight-pulse');
+            void briefForm.offsetWidth; // Reflow to restart animation
+            briefForm.classList.add('form-highlight-pulse');
+            setTimeout(() => briefForm.classList.remove('form-highlight-pulse'), 1900);
+          }
+        }, 550);
+      }
+    });
+  }
+
   // --- Work Filter Functionality ---
   const filterBtns = document.querySelectorAll('.work-filter-btn');
   const workCards = document.querySelectorAll('.work-card');
