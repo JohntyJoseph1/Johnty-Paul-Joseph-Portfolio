@@ -417,9 +417,42 @@ document.addEventListener('DOMContentLoaded', () => {
         formStatus.style.display = 'none';
       }
 
-      const formData = new FormData(briefForm);
-      formData.set('subject', `[Portfolio Brief] ${scope} — from ${name}`);
-      formData.set('from_name', `${name} (via Portfolio)`);
+      // Format current timestamp
+      const sentTime = new Date().toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Construct a structured executive brief for the email
+      const formattedBrief = [
+        '┌─────────────────────────────────────────────────────────┐',
+        '  PROJECT BRIEF & INQUIRY DETAILS',
+        '└─────────────────────────────────────────────────────────┘',
+        '',
+        message,
+        '',
+        '───────────────────────────────────────────────────────────',
+        `💡 Quick Action: Click "Reply" to respond directly to ${email}`
+      ].join('\n');
+
+      // Build structured payload for Web3Forms
+      const payload = new FormData();
+      payload.append('access_key', 'e48e4036-d0c3-4d8e-aaa9-95d67a63f808');
+      payload.append('subject', `💼 [New Inquiry] ${scope} — ${name}`);
+      payload.append('from_name', `${name} via Johnty Portfolio`);
+      payload.append('replyto', email);
+
+      // Cleanly organized fields that Web3Forms renders as structured sections
+      payload.append('Client_Name', name);
+      payload.append('Client_Email', email);
+      payload.append('Inquiry_Scope', scope);
+      payload.append('Submission_Time', sentTime);
+      payload.append('Project_Brief', formattedBrief);
+      payload.append('Portfolio_Source', 'Johnty Paul Joseph Portfolio (johntyjoseph1.github.io)');
 
       try {
         const response = await fetch('https://api.web3forms.com/submit', {
@@ -427,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: {
             'Accept': 'application/json'
           },
-          body: formData
+          body: payload
         });
 
         const data = await response.json();
