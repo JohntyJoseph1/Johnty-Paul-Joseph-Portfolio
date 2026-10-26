@@ -666,19 +666,24 @@
           </ul>
         </div>
 
-        <form class="brief-form" id="briefForm">
-          <label>YOUR NAME / COMPANY<input type="text" id="fName" placeholder="e.g. Priya Shah (Zoho)" required></label>
-          <label>EMAIL ADDRESS<input type="email" id="fEmail" placeholder="name@company.com" required></label>
+        <form class="brief-form" id="briefForm" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="e48e4036-d0c3-4d8e-aaa9-95d67a63f808">
+          <input type="hidden" name="from_name" value="Johnty Portfolio Visitor">
+          <input type="hidden" name="subject" value="New Project Brief via Portfolio">
+          <input type="checkbox" name="botcheck" style="display:none;" tabindex="-1" autocomplete="off">
+
+          <label>YOUR NAME / COMPANY<input type="text" name="name" id="fName" placeholder="e.g. Priya Shah (Zoho)" required></label>
+          <label>EMAIL ADDRESS<input type="email" name="email" id="fEmail" placeholder="name@company.com" required></label>
           <label>PROJECT SCOPE
-            <select id="fScope">
+            <select name="project_scope" id="fScope">
               <option value="Full-time UI/UX role">Full-time UI/UX role</option>
               <option value="Full-time Product Design role">Full-time Product Design role</option>
               <option value="Contract / freelance project">Contract / freelance project</option>
               <option value="Just want to connect">Just want to connect</option>
             </select>
           </label>
-          <label>MESSAGE<textarea id="fMsg" rows="4" placeholder="Tell me about the role or project..." required></textarea></label>
-          <button type="submit" class="btn primary" id="briefSubmitBtn" style="width:100%;"><span>SEND VIA EMAIL</span> <span class="btn-arrow">→</span></button>
+          <label>MESSAGE<textarea name="message" id="fMsg" rows="4" placeholder="Tell me about the role or project..." required></textarea></label>
+          <button type="submit" class="btn primary" id="briefSubmitBtn" style="width:100%;"><span>SEND INQUIRY</span> <span class="btn-arrow">→</span></button>
           <div class="form-status" id="formStatus" style="display:none;" aria-live="polite"></div>
         </form>
       </div>

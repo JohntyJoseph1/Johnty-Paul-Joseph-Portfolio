@@ -379,8 +379,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const briefSubmitBtn = document.getElementById('briefSubmitBtn');
   const formStatus = document.getElementById('formStatus');
 
+  const escapeHtml = (str) => {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  };
+
   if (briefForm) {
-    briefForm.addEventListener('submit', (e) => {
+    briefForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const nameInput = document.getElementById('fName');
@@ -397,88 +403,104 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const recipient = 'johntypaul35@gmail.com';
-      const subject = `[Project Brief] ${scope} — ${name}`;
-      
-      const body = `Hi Johnty,
+      const originalBtnHtml = briefSubmitBtn ? briefSubmitBtn.innerHTML : '<span>SEND INQUIRY</span> <span class="btn-arrow">→</span>';
 
-I would like to discuss an opportunity regarding: ${scope}.
-
-==================================================
-PROJECT BRIEF & CONTACT DETAILS
-==================================================
-• Sender / Company : ${name}
-• Direct Email     : ${email}
-• Project Scope    : ${scope}
-• Date Sent        : ${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-
---------------------------------------------------
-MESSAGE & PROJECT SCOPE:
---------------------------------------------------
-${message}
-
-==================================================
-Sent via Johnty Paul Joseph Portfolio Brief Engine`;
-
-      const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-      // Update button visual state
+      // Update button visual state to sending
       if (briefSubmitBtn) {
-        const originalText = briefSubmitBtn.innerHTML;
-        briefSubmitBtn.innerHTML = 'EMAIL CLIENT OPENED ✓';
-        briefSubmitBtn.classList.add('btn-submitted');
-
-        setTimeout(() => {
-          briefSubmitBtn.innerHTML = originalText;
-          briefSubmitBtn.classList.remove('btn-submitted');
-        }, 4000);
+        briefSubmitBtn.disabled = true;
+        briefSubmitBtn.innerHTML = '<span>TRANSMITTING BRIEF...</span>';
+        briefSubmitBtn.classList.remove('btn-submitted');
       }
 
-      // Display actionable status feedback card
+      // Hide prior status
       if (formStatus) {
-        formStatus.style.display = 'block';
-        formStatus.innerHTML = `
-          <div class="form-status-inner">
-            <div class="status-title">
-              <span class="status-dot"></span>
-              BRIEF FORMATTED &amp; DIRECTED TO GMAIL
-            </div>
-            <p class="status-desc">
-              Your inquiry has been structured and transferred to <strong>${recipient}</strong>. If your email client did not launch automatically, choose an option below:
-            </p>
-            <div class="status-actions">
-              <a href="${gmailWebUrl}" target="_blank" rel="noopener" class="status-link gmail-link" id="directGmailBtn">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                Open Directly in Gmail Web →
-              </a>
-              <button type="button" class="status-link copy-msg-link" id="copyFormattedBriefBtn">
-                <span id="copyBriefLabel">Copy Formatted Brief</span>
-              </button>
-            </div>
-          </div>
-        `;
+        formStatus.style.display = 'none';
+      }
 
-        const copyBriefBtn = document.getElementById('copyFormattedBriefBtn');
-        if (copyBriefBtn) {
-          copyBriefBtn.addEventListener('click', () => {
-            const fullClipboardText = `Subject: ${subject}\n\n${body}`;
-            navigator.clipboard.writeText(fullClipboardText).then(() => {
-              const label = document.getElementById('copyBriefLabel');
-              if (label) label.textContent = 'Copied to Clipboard ✓';
-              setTimeout(() => {
-                if (label) label.textContent = 'Copy Formatted Brief';
-              }, 2500);
-            }).catch(() => {
-              const label = document.getElementById('copyBriefLabel');
-              if (label) label.textContent = 'Copied ✓';
-            });
-          });
+      const formData = new FormData(briefForm);
+      formData.set('subject', `[Portfolio Brief] ${scope} — from ${name}`);
+      formData.set('from_name', `${name} (via Portfolio)`);
+
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json'
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200 && data.success) {
+          // Success state
+          if (briefSubmitBtn) {
+            briefSubmitBtn.innerHTML = '<span>MESSAGE SENT DIRECTLY ✓</span>';
+            briefSubmitBtn.classList.add('btn-submitted');
+          }
+
+          if (formStatus) {
+            formStatus.style.display = 'block';
+            formStatus.innerHTML = `
+              <div class="form-status-inner" style="border-left: 3px solid #22C55E; background: rgba(16, 28, 22, 0.95);">
+                <div class="status-title" style="color: #4ADE80;">
+                  <span class="status-dot" style="background:#22C55E; box-shadow: 0 0 8px #22C55E;"></span>
+                  BRIEF SENT DIRECTLY TO JOHNTY'S INBOX
+                </div>
+                <p class="status-desc" style="color: #ECEAE2; margin: 8px 0 0 0;">
+                  Thank you, <strong>${escapeHtml(name)}</strong>! Your inquiry regarding <em>${escapeHtml(scope)}</em> has been delivered directly to Johnty. I will review your project brief and reply directly to <strong>${escapeHtml(email)}</strong> shortly.
+                </p>
+              </div>
+            `;
+          }
+
+          briefForm.reset();
+
+          setTimeout(() => {
+            if (briefSubmitBtn) {
+              briefSubmitBtn.disabled = false;
+              briefSubmitBtn.innerHTML = originalBtnHtml;
+              briefSubmitBtn.classList.remove('btn-submitted');
+            }
+          }, 6000);
+
+        } else {
+          throw new Error(data.message || 'Submission error');
+        }
+
+      } catch (err) {
+        console.error('Web3Forms submission error:', err);
+
+        if (briefSubmitBtn) {
+          briefSubmitBtn.disabled = false;
+          briefSubmitBtn.innerHTML = originalBtnHtml;
+          briefSubmitBtn.classList.remove('btn-submitted');
+        }
+
+        if (formStatus) {
+          formStatus.style.display = 'block';
+          const recipient = 'johntypaul35@gmail.com';
+          const subject = `[Project Brief] ${scope} — ${name}`;
+          const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+
+          formStatus.innerHTML = `
+            <div class="form-status-inner" style="border-left: 3px solid #EF4444; background: rgba(30, 18, 18, 0.95);">
+              <div class="status-title" style="color: #F87171;">
+                <span class="status-dot" style="background:#EF4444; box-shadow: 0 0 8px #EF4444;"></span>
+                NETWORK ERROR OCCURRED
+              </div>
+              <p class="status-desc" style="color: #E2E8F0; margin: 6px 0 10px 0;">
+                Unable to reach the email relay service directly. You can send your formatted brief via Gmail Web:
+              </p>
+              <div class="status-actions">
+                <a href="${gmailWebUrl}" target="_blank" rel="noopener" class="status-link gmail-link">
+                  Open in Gmail Web →
+                </a>
+              </div>
+            </div>
+          `;
         }
       }
-
-      // Trigger default mail client
-      window.location.href = mailtoUrl;
     });
   }
 
