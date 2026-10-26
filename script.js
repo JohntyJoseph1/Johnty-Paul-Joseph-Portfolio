@@ -438,23 +438,34 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         let sent = false;
 
-        // Primary: Dispatch custom luxury dark-mode email via EmailJS
-        if (typeof emailjs !== 'undefined') {
-          emailjs.init({ publicKey: '3sQtF03ygDo2RXkSF' });
-          await emailjs.send('service_vzo9dc8', 'template_v0nlj6i', templateParams);
-          sent = true;
-        } else {
-          const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        // Engine 1: Dispatch custom luxury dark-mode email via EmailJS
+        try {
+          if (typeof emailjs !== 'undefined') {
+            emailjs.init({ publicKey: '3sQtF03ygDo2RXkSF' });
+            const eRes = await emailjs.send('service_vzo9dc8', 'template_v0nlj6i', templateParams);
+            if (eRes.status === 200) {
+              sent = true;
+            }
+          }
+        } catch (eJsErr) {
+          console.warn('EmailJS delivery attempt encountered an issue:', eJsErr);
+        }
+
+        // Engine 2: Seamless automatic fallback to Web3Forms if EmailJS needs permission
+        if (!sent) {
+          console.log('Routing via Web3Forms fallback relay...');
+          const fallbackData = new FormData(briefForm);
+          fallbackData.set('subject', `💼 [Portfolio Inquiry] ${scope} — ${name}`);
+          fallbackData.set('from_name', `${name} via Johnty Portfolio`);
+          fallbackData.set('access_key', 'e48e4036-d0c3-4d8e-aaa9-95d67a63f808');
+
+          const w3Res = await fetch('https://api.web3forms.com/submit', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              service_id: 'service_vzo9dc8',
-              template_id: 'template_v0nlj6i',
-              user_id: '3sQtF03ygDo2RXkSF',
-              template_params: templateParams
-            })
+            headers: { 'Accept': 'application/json' },
+            body: fallbackData
           });
-          if (res.ok) {
+          const w3Json = await w3Res.json();
+          if (w3Res.status === 200 && w3Json.success) {
             sent = true;
           }
         }
