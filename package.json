@@ -1,12 +1,9 @@
 {
-  "name": "johnty-paul-joseph-portfolio",
+  "name": "johnty-portfolio",
   "version": "1.0.0",
-  "description": "Portfolio of Johnty Paul Joseph — UI/UX & Product Designer",
-  "main": "serve.js",
+  "private": true,
+  "description": "Figma-style portfolio for Johnty Paul Joseph. Plain HTML, CSS and JS. No build step.",
   "scripts": {
-    "start": "node serve.js",
-    "dev": "node serve.js"
-  },
-  "keywords": ["portfolio", "ui-ux", "product-design"],
-  "author": "Johnty Paul Joseph"
+    "start": "npx serve ."
+  }
 }

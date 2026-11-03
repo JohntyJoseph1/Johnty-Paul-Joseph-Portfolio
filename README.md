@@ -1,96 +1,88 @@
-# Johnty Paul Joseph — UI/UX & Product Designer
+# Johnty Paul Joseph — Portfolio
 
-[![Live Portfolio](https://img.shields.io/badge/Live%20Site-Johnty's%20Portfolio-0A66C2?style=for-the-badge&logo=googlechrome&logoColor=white)](https://johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio/)
-[![UI/UX Design](https://img.shields.io/badge/Specialty-Enterprise%20B2B%20SaaS-orange?style=for-the-badge)](https://johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio/)
-[![GitHub Pages](https://img.shields.io/badge/Hosted%20On-GitHub%20Pages-222222?style=for-the-badge&logo=github)](https://johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio/)
+A portfolio that behaves like a Figma file: frames on a pannable, zoomable canvas, a layers panel,
+an inspect panel and comment pins. Plain HTML, CSS and JavaScript. **No build step, no dependencies.**
 
-> **Personal design portfolio of Johnty Paul Joseph** — Senior Product Designer specializing in complex Enterprise B2B SaaS platforms, multi-module workforce ecosystems, scalable design systems, and mobile interfaces.
+## Run it
 
----
+**Easiest:** double-click `index.html`. It works straight from your computer.
 
-## 🌟 Live Demo
+**With a local server** (recommended while editing, needs Node):
 
-🔗 **Visit the live website:** **[https://johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio/](https://johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio/)**
-
----
-
-## 💼 Featured Case Studies & Projects
-
-| Project | Domain | Highlights |
-| :--- | :--- | :--- |
-| **Digylax HR & Workforce SaaS** | Enterprise B2B SaaS | Complete UX architecture for an 11-module HRMS suite covering payroll automation, attendance geo-fencing, asset tracking, and role-based access. |
-| **Robuster Ride** | Mobility & EV Fleet | High-conversion ride-hailing and fleet management mobile application focusing on rider micro-interactions, driver dashboards, and route tracking. |
-| **Travel by Toshiv** | Luxury Concierge & Travel | Immersive responsive web portal crafted for high-end bespoke travel itineraries with fluid transitions and multi-currency booking flow. |
-
----
-
-## 🎨 Design & Engineering Highlights
-
-- **Bespoke Aesthetics**: Editorial layout blending *IBM Plex Sans*, *Fraunces*, and *Big Shoulders Display* typography with rich dark themes and ambient neon accents.
-- **Interactive Micro-Animations**: Native HTML5 Canvas particle/glitter engine simulating subtle ethereal depth in the hero section.
-- **Pure Native Stack**: Built entirely with clean semantic HTML5, modular Vanilla CSS, and lightweight Vanilla JavaScript without bulky runtime frameworks.
-- **Fully Responsive**: Fluid layout scaling effortlessly from ultra-wide 4K monitors down to mobile viewports.
-- **Accessible & Performance-Tuned**: High contrast ratios, native lazy-loading for assets, and near-instant load speeds.
-
----
-
-## 🛠️ Built With
-
-- **Structure**: HTML5 (Semantic, accessible markup)
-- **Styling**: Vanilla CSS3 (Custom properties, grid systems, glassmorphism, responsive media queries)
-- **Interactions**: Vanilla JavaScript (ES6+, IntersectionObserver, Canvas API)
-- **Hosting**: GitHub Pages with custom branch deployment
-
----
-
-## 📁 Repository Structure
-
-```text
-Johnty-Paul-Joseph-Portfolio/
-├── index.html              # Main portfolio single-page application
-├── style.css               # Core design tokens, layout, and component styles
-├── script.js               # Canvas particle system, interactive modal & navigation logic
-├── serve.js                # Lightweight local development static server
-├── package.json            # Project manifest & npm scripts
-├── assets/
-│   ├── Johnty_Paul_Joseph_Resume.pdf  # Downloadable resume
-│   └── images/                        # High-resolution case study mockups & logos
-└── README.md               # Repository documentation
+```bash
+npm start        # runs: npx serve .   then open the address it prints
 ```
 
----
+## Folder map
 
-## 💻 Local Development
+```
+index.html            page shell (editor chrome). Rarely edited.
+css/styles.css        all styling. Editor colours at the top, in-frame design tokens under .frame-box
+js/data.js            ★ ALL YOUR CONTENT. Edit this file to change text and add projects.
+js/app.js             the engine: builds frames from data.js, auto-layout, pan/zoom/select. Rarely edited.
+assets/images/        ★ drop your mockups and photos here
+assets/resume/        your resume PDF (keep the same filename to update it)
+```
 
-To run this portfolio locally on your machine:
+## Add a project (2 minutes)
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/JohntyJoseph1/Johnty-Paul-Joseph-Portfolio.git
-   cd Johnty-Paul-Joseph-Portfolio
-   ```
+1. Put your mockup images in `assets/images/` (e.g. `hr-attendance.jpg`).
+2. Open `js/data.js`, find `projects: [`, copy one whole `{ ... }` block, paste it after a comma, and edit:
+   - `id` must be unique and use only letters, numbers and dashes.
+   - `visual.type`: `"image"` (one hero image), `"figma"` (live prototype), or `"wireframe"` (placeholder).
+   - `visual.device` for images: `"browser"`, `"phone"` or `"plain"`.
+   - `gallery`: extra mockups. They show as thumbnails and open full-size when clicked.
+3. Save and refresh. The new frame appears on the canvas, in the layers panel and in Fit All automatically.
+   More than three projects wrap onto a new row.
 
-2. **Run the local preview server:**
-   ```bash
-   npm start
-   ```
-   *Or open `index.html` directly in any web browser.*
+Replace the HR project's `visual: { type: "wireframe" }` with real mockups only if your employer allows it.
+Those screens are confidential, so check first.
 
-3. **View in browser:**
-   Open [http://localhost:3000](http://localhost:3000)
+## Swap the photo
 
----
+Replace `assets/images/portrait.jpg` with a sharper one, ideally at least 900 px wide (the current one is small).
+Same filename, or change `portrait` in `js/data.js`.
 
-## 📬 Contact & Connect
+## Update the resume
 
-- **Email**: [johntypaul35@gmail.com](mailto:johntypaul35@gmail.com)
-- **GitHub**: [@JohntyJoseph1](https://github.com/JohntyJoseph1)
-- **Portfolio**: [johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio](https://johntyjoseph1.github.io/Johnty-Paul-Joseph-Portfolio/)
+Replace `assets/resume/Johnty_Paul_Joseph_Resume.pdf` with your new PDF, keeping the filename.
 
----
+## Figma prototype embeds
 
-## 📄 License & Copyright
+In Figma: open the prototype, click **Share**, switch on **Allow embed**, then copy the prototype link into `visual.url`.
+Use `content-scaling=responsive` in the URL so it fits on phones (already set for Robuster Ride).
+If an embed stays blank, the file owner hasn't allowed embedding. The "Open in Figma" link still works.
 
-© 2026 **Johnty Paul Joseph**. All rights reserved.
+## Deploy free on GitHub Pages
 
-All visual designs, product architecture case studies, UI mockups, brand assets, and code contained within this repository are the proprietary intellectual property of Johnty Paul Joseph. Unauthorized copying, modification, republication, or distribution without prior written permission is strictly prohibited. See [LICENSE](LICENSE) for full details.
+```bash
+git init
+git add .
+git commit -m "Portfolio"
+git branch -M main
+git remote add origin https://github.com/<your-username>/<repo-name>.git
+git push -u origin main
+```
+
+Then on GitHub: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: main / (root) → Save.**
+Your site goes live at `https://<your-username>.github.io/<repo-name>/` in a minute or two.
+(The `.nojekyll` file is already included.)
+
+## Keyboard and controls
+
+| Action | How |
+|---|---|
+| Pan | Scroll, or drag the canvas |
+| Zoom | Ctrl or ⌘ + scroll, pinch, or the + / − buttons |
+| Fit everything | `Shift + 1` or the fit button |
+| Zoom to selected frame | `Shift + 2` or double-click a frame |
+| Reset to 100% | `Shift + 0` |
+| Deselect / close | `Esc` |
+
+On phones (under 760 px) it opens in a normal scrolling "Simple view". The toolbar button switches views on any device.
+
+## Rules for the content
+
+Everything in `data.js` must be something you can explain in an interview. No invented metrics, no
+testimonials unless the person said it, no projects you didn't do. Real recommendations from LinkedIn are welcome
+as a new frame once you have them.
