@@ -80,17 +80,23 @@
 <div id="tourGuide" class="ui" role="dialog" aria-modal="true" aria-labelledby="tgTitle">
   <div class="tg-card">
     <div class="tg-header">
-      <span class="tg-badge"><span class="tg-dot"></span>Tour: Step <b id="tgStepNum">1</b> of <span id="tgTotalSteps">7</span></span>
-      <button class="tg-close" id="tgClose" type="button" aria-label="Exit tour">✕</button>
+      <span class="tg-badge"><span class="tg-dot"></span>Tour: Step <b id="tgStepNum">1</b> of <span id="tgTotalSteps">9</span></span>
+      <button class="tg-close" id="tgClose" type="button" aria-label="Exit tour"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
     </div>
     <div class="tg-body">
-      <h3 id="tgTitle">Cover & Overview</h3>
+      <h3 id="tgTitle">Cover & Introduction</h3>
       <p id="tgText">Welcome! Explore Johnty's work as a UX & Product Designer specializing in enterprise software.</p>
     </div>
     <div class="tg-footer">
-      <button class="tg-btn secondary" id="tgPrev" type="button">← Back</button>
+      <button class="tg-btn secondary" id="tgPrev" type="button">
+        <svg class="tg-arrow" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13L5 8l5-5"/></svg>
+        <span>Back</span>
+      </button>
       <div class="tg-dots" id="tgDots"></div>
-      <button class="tg-btn primary" id="tgNext" type="button">Next step →</button>
+      <button class="tg-btn primary" id="tgNext" type="button">
+        <span>Next step</span>
+        <svg class="tg-arrow" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>
+      </button>
     </div>
   </div>
 </div>

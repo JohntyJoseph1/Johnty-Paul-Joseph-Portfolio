@@ -411,7 +411,7 @@
     var layersVisible = layersEl && !layersEl.classList.contains('collapsed') && layersEl.style.display !== 'none';
     var l = (!simple && window.innerWidth > 900 && layersVisible) ? 236 : 0;
     var r = (!simple && window.innerWidth > 1180) ? 262 : 0;
-    var b = isTourActive ? (window.innerWidth < 500 ? 190 : 160) : 76;
+    var b = isTourActive ? (window.innerWidth < 500 ? 210 : 220) : 76;
     return { l: l, r: r, t: 48, b: b };
   }
   var lastInv = null, lastFar = null;
@@ -981,24 +981,34 @@
       text: "Enterprise software fails when logic is broken. Johnty maps permission matrixes, business rules, and edge states before touching visual polish."
     },
     {
-      frame: 'f-hrms',
+      frame: 'f-hr',
       title: 'Flagship: HR & Payroll Suite',
       text: "Enterprise B2B suite with interactive mockups. Explores onboarding, statutory payroll compliance, asset management, and role-based employee portals."
     },
     {
-      frame: 'f-travel',
+      frame: 'f-toshiv',
       title: 'Live Product: Travel by Toshiv',
       text: "Live overseas career and visa consultation platform. Designed with boarding-pass style step journeys, mobile-responsive layouts, and clear calls to action."
     },
     {
-      frame: 'f-robuster',
+      frame: 'f-ride',
       title: 'Mobile App: Robuster Ride',
       text: "Ride-hailing mobile concept featuring upfront price transparency, multi-stop route planning, and flexible scheduling."
     },
     {
       frame: 'f-process',
-      title: 'Design Process & Capabilities',
+      title: 'Design Process & Pipeline',
       text: "A structured 4-stage pipeline: Domain Discovery → Stories & Flows → High-Fidelity Validation → Engineering Handoff."
+    },
+    {
+      frame: 'f-caps',
+      title: 'Capabilities & Core Stack',
+      text: "Full-stack product design expertise: user research, workflow architecture, Figma design systems, interactive prototypes, and production code handoff."
+    },
+    {
+      frame: 'f-exp',
+      title: 'Experience & Background',
+      text: "Hands-on experience at Digylax designing production HRMS and B2B products, backed by operations experience in production execution."
     },
     {
       frame: 'f-contact',
@@ -1029,12 +1039,15 @@
     if (tgTitle) tgTitle.textContent = step.title;
     if (tgText) tgText.textContent = step.text;
 
-    if (tgPrev) tgPrev.disabled = (index === 0);
+    if (tgPrev) {
+      tgPrev.disabled = (index === 0);
+      tgPrev.innerHTML = '<svg class="tg-arrow" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13L5 8l5-5"/></svg><span>Back</span>';
+    }
     if (tgNext) {
       if (index === TOUR_STEPS.length - 1) {
-        tgNext.textContent = 'Finish tour ✦';
+        tgNext.innerHTML = '<span>Finish tour</span><svg class="tg-arrow" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5 6.5-7.5"/></svg>';
       } else {
-        tgNext.textContent = 'Next step →';
+        tgNext.innerHTML = '<span>Next step</span><svg class="tg-arrow" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>';
       }
     }
 
@@ -1044,7 +1057,7 @@
         var dot = document.createElement('button');
         dot.type = 'button';
         dot.className = 'tg-d' + (i === index ? ' active' : '');
-        dot.title = 'Step ' + (i + 1) + ': ' + s.title;
+        dot.title = 'Step ' + (i + 1) + ' of ' + TOUR_STEPS.length + ': ' + s.title;
         dot.setAttribute('aria-label', 'Go to tour step ' + (i + 1));
         dot.onclick = function (e) {
           e.stopPropagation();
@@ -1099,6 +1112,8 @@
       }
     };
   }
+
+  updateTourCardUI(0);
 
   window.startGuidedTour = startGuidedTour;
   window.endGuidedTour = endGuidedTour;
