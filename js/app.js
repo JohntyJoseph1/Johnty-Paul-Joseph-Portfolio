@@ -402,9 +402,14 @@
   }
 
   /* ---------- camera ---------- */
+  function isMobileDrawer() {
+    return isSimple() || window.innerWidth <= 900;
+  }
   function insets() {
     var simple = document.body.classList.contains('simple');
-    var l = (!simple && window.innerWidth > 900 && document.getElementById('layers').style.display !== 'none') ? 236 : 0;
+    var layersEl = document.getElementById('layers');
+    var layersVisible = layersEl && !layersEl.classList.contains('collapsed') && layersEl.style.display !== 'none';
+    var l = (!simple && window.innerWidth > 900 && layersVisible) ? 236 : 0;
     var r = (!simple && window.innerWidth > 1180) ? 262 : 0;
     return { l: l, r: r, t: 48, b: 76 };
   }
@@ -460,7 +465,12 @@
       g[1].forEach(function (id) { h += '<button class="layer child" data-id="' + id + '">' + ICON + '<span>' + esc(INFO[id][0]) + '</span></button>'; });
     });
     document.getElementById('layerList').innerHTML = h;
-    [].forEach.call(document.querySelectorAll('.layer[data-id]'), function (b) { b.addEventListener('click', function () { select(b.dataset.id, true); }); });
+    [].forEach.call(document.querySelectorAll('.layer[data-id]'), function (b) {
+      b.addEventListener('click', function () {
+        select(b.dataset.id, true);
+        if (isMobileDrawer()) setLayersOpen(false);
+      });
+    });
   }
   function renderInspect(id) {
     var body = document.getElementById('inspectBody'), d = INFO[id];
@@ -495,15 +505,11 @@
           window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
       }
-      var l = document.getElementById('layers');
-      if (l) l.classList.remove('open');
-      var btn = document.getElementById('btnLayers');
-      if (btn) btn.classList.remove('on');
-      var backdrop = document.getElementById('navBackdrop');
-      if (backdrop) backdrop.classList.remove('open');
+      setLayersOpen(false);
     } else {
       if (id) updateSelection(fly); else selEl.style.display = 'none';
       renderInspect(id);
+      if (fly && isMobileDrawer()) setLayersOpen(false);
     }
     tourUpdate();
   }
@@ -647,12 +653,7 @@
     if (e.key === 'Escape') {
       closeLightbox();
       closeWelcome();
-      var l = document.getElementById('layers');
-      if (l) l.classList.remove('open');
-      var btn = document.getElementById('btnLayers');
-      if (btn) btn.classList.remove('on');
-      var backdrop = document.getElementById('navBackdrop');
-      if (backdrop) backdrop.classList.remove('open');
+      setLayersOpen(false);
       select(null, false);
       return;
     }
@@ -815,29 +816,40 @@
   if (themeBtn) themeBtn.onclick = toggleTheme;
   var themeBtnTop = document.getElementById('themeBtnTop');
   if (themeBtnTop) themeBtnTop.onclick = toggleTheme;
+  function setLayersOpen(open) {
+    var l = document.getElementById('layers');
+    var btn = document.getElementById('btnLayers');
+    var backdrop = document.getElementById('navBackdrop');
+    if (!l) return;
+
+    if (isMobileDrawer()) {
+      var shouldOpen = (typeof open === 'boolean') ? open : !l.classList.contains('open');
+      l.classList.toggle('open', shouldOpen);
+      if (btn) btn.classList.toggle('on', shouldOpen);
+      if (backdrop) backdrop.classList.toggle('open', shouldOpen);
+      l.style.display = '';
+    } else {
+      var isCurrentlyHidden = l.classList.contains('collapsed') || (l.style.display === 'none');
+      var shouldShow = (typeof open === 'boolean') ? open : isCurrentlyHidden;
+      l.classList.toggle('collapsed', !shouldShow);
+      l.style.display = shouldShow ? 'flex' : 'none';
+      if (btn) btn.classList.toggle('on', shouldShow);
+      if (backdrop) backdrop.classList.remove('open');
+    }
+  }
+
   var btnLayers = document.getElementById('btnLayers');
   if (btnLayers) {
-    btnLayers.onclick = function () {
-      var l = document.getElementById('layers');
-      var backdrop = document.getElementById('navBackdrop');
-      if (isSimple()) {
-        var isOpen = l.classList.toggle('open');
-        btnLayers.classList.toggle('on', isOpen);
-        if (backdrop) backdrop.classList.toggle('open', isOpen);
-      } else {
-        var hidden = (l.style.display === 'none');
-        l.style.display = hidden ? 'block' : 'none';
-        btnLayers.classList.toggle('on', hidden);
-      }
+    btnLayers.onclick = function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      setLayersOpen();
     };
   }
   var navBackdrop = document.getElementById('navBackdrop');
   if (navBackdrop) {
-    navBackdrop.addEventListener('click', function () {
-      var l = document.getElementById('layers');
-      if (l) l.classList.remove('open');
-      if (btnLayers) btnLayers.classList.remove('on');
-      navBackdrop.classList.remove('open');
+    navBackdrop.addEventListener('click', function (e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      setLayersOpen(false);
     });
   }
   function updateViewButtons(on) {
@@ -863,19 +875,16 @@
   function setSimple(on) {
     document.body.classList.toggle('simple', on);
     updateViewButtons(on);
+    setLayersOpen(false);
     var l = document.getElementById('layers');
-    var backdrop = document.getElementById('navBackdrop');
     if (l) {
-      l.classList.remove('open');
       var h4 = l.querySelector('h4');
       if (h4) h4.textContent = on ? 'Navigation' : 'Layers';
     }
     if (btnLayers) {
-      btnLayers.classList.remove('on');
       btnLayers.setAttribute('title', on ? 'Toggle navigation menu' : 'Toggle layers');
       btnLayers.setAttribute('aria-label', on ? 'Toggle navigation menu' : 'Toggle layers');
     }
-    if (backdrop) backdrop.classList.remove('open');
     if (!on) {
       requestAnimationFrame(function () {
         layout();
