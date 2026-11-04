@@ -76,6 +76,24 @@
 <div class="ui" id="toast">Drag canvas to pan · Ctrl + scroll to zoom · Click any frame to inspect</div>
 
 <div id="welcome" role="dialog" aria-modal="true" aria-labelledby="wTitle"></div>
+
+<div id="tourGuide" class="ui" role="dialog" aria-modal="true" aria-labelledby="tgTitle">
+  <div class="tg-card">
+    <div class="tg-header">
+      <span class="tg-badge"><span class="tg-dot"></span>Tour: Step <b id="tgStepNum">1</b> of <span id="tgTotalSteps">7</span></span>
+      <button class="tg-close" id="tgClose" type="button" aria-label="Exit tour">✕</button>
+    </div>
+    <div class="tg-body">
+      <h3 id="tgTitle">Cover & Overview</h3>
+      <p id="tgText">Welcome! Explore Johnty's work as a UX & Product Designer specializing in enterprise software.</p>
+    </div>
+    <div class="tg-footer">
+      <button class="tg-btn secondary" id="tgPrev" type="button">← Back</button>
+      <div class="tg-dots" id="tgDots"></div>
+      <button class="tg-btn primary" id="tgNext" type="button">Next step →</button>
+    </div>
+  </div>
+</div>
 <div id="lightbox"><img alt=""><p></p></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>

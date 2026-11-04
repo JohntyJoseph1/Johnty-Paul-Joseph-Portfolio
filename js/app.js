@@ -370,7 +370,7 @@
   canvas.insertAdjacentHTML('afterbegin', html);
   var frames = [].slice.call(canvas.querySelectorAll('.frame'));
   var selEl = document.getElementById('selection'), zr = document.getElementById('zr');
-  var scale = 0.5, panX = 0, panY = 0, selected = null;
+  var scale = 0.5, panX = 0, panY = 0, selected = null, isTourActive = false;
 
   /* ---------- fill chrome from data ---------- */
   document.title = P.name + ' — ' + P.role;
@@ -411,7 +411,8 @@
     var layersVisible = layersEl && !layersEl.classList.contains('collapsed') && layersEl.style.display !== 'none';
     var l = (!simple && window.innerWidth > 900 && layersVisible) ? 236 : 0;
     var r = (!simple && window.innerWidth > 1180) ? 262 : 0;
-    return { l: l, r: r, t: 48, b: 76 };
+    var b = isTourActive ? (window.innerWidth < 500 ? 190 : 160) : 76;
+    return { l: l, r: r, t: 48, b: b };
   }
   var lastInv = null, lastFar = null;
   function apply() {
@@ -494,6 +495,18 @@
     }
   }
   function select(id, fly) {
+    if (isTourActive) {
+      if (!id && !fly) {
+        if (typeof TOUR_STEPS !== 'undefined' && TOUR_STEPS[currentTourIndex]) id = TOUR_STEPS[currentTourIndex].frame;
+      } else if (id && typeof updateTourCardUI === 'function' && typeof TOUR_STEPS !== 'undefined') {
+        for (var ti = 0; ti < TOUR_STEPS.length; ti++) {
+          if (TOUR_STEPS[ti].frame === id) {
+            updateTourCardUI(ti);
+            break;
+          }
+        }
+      }
+    }
     selected = id;
     frames.forEach(function (f) { f.classList.toggle('selected', f.id === id); });
     [].forEach.call(document.querySelectorAll('.layer[data-id]'), function (b) { b.classList.toggle('sel', b.dataset.id === id); });
@@ -674,13 +687,31 @@
   document.addEventListener('keydown', function (e) {
     if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
     if (e.key === 'Escape') {
+      if (isTourActive && typeof endGuidedTour === 'function') {
+        endGuidedTour();
+        return;
+      }
       closeLightbox();
       closeWelcome();
       setLayersOpen(false);
       select(null, false);
       return;
     }
-    if (isSimple() || welcome.classList.contains('open')) return;
+    if (isTourActive) {
+      if (e.key === 'ArrowRight') {
+        if (typeof TOUR_STEPS !== 'undefined' && currentTourIndex < TOUR_STEPS.length - 1) {
+          renderTourStep(currentTourIndex + 1);
+        } else if (typeof endGuidedTour === 'function') {
+          endGuidedTour();
+        }
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        if (currentTourIndex > 0) renderTourStep(currentTourIndex - 1);
+        return;
+      }
+    }
+    if (isSimple() || (welcome && welcome.classList.contains('open'))) return;
     if (e.key === 'ArrowRight') { goNext(); return; }
     if (e.key === 'ArrowLeft') { goPrev(); return; }
     if (e.key === 'c' || e.key === 'C') { toggleComments(); return; }
@@ -896,6 +927,7 @@
     }
   }
   function setSimple(on) {
+    if (on && typeof endGuidedTour === 'function') endGuidedTour();
     document.body.classList.toggle('simple', on);
     updateViewButtons(on);
     setLayersOpen(false);
@@ -931,15 +963,145 @@
   if (dGuide) {
     dGuide.onclick = function () {
       setLayersOpen(false);
-      if (isSimple()) {
-        setSimple(false);
-        setTimeout(function () { if (welcome) welcome.classList.add('open'); }, 350);
-      } else {
-        if (welcome) welcome.classList.add('open');
-      }
+      startGuidedTour();
     };
   }
   window.openGuide = function () { if (welcome) welcome.classList.add('open'); };
+
+  /* ---------- interactive guided walkthrough tour ---------- */
+  var TOUR_STEPS = [
+    {
+      frame: 'f-hero',
+      title: 'Cover & Introduction',
+      text: "Welcome! Johnty Paul Joseph is a UX & Product Designer specializing in enterprise software, multi-portal HRMS suites, and logic-driven workflows."
+    },
+    {
+      frame: 'f-about',
+      title: 'Philosophy: Logic First, Pixels Second',
+      text: "Enterprise software fails when logic is broken. Johnty maps permission matrixes, business rules, and edge states before touching visual polish."
+    },
+    {
+      frame: 'f-hrms',
+      title: 'Flagship: HR & Payroll Suite',
+      text: "Enterprise B2B suite with interactive mockups. Explores onboarding, statutory payroll compliance, asset management, and role-based employee portals."
+    },
+    {
+      frame: 'f-travel',
+      title: 'Live Product: Travel by Toshiv',
+      text: "Live overseas career and visa consultation platform. Designed with boarding-pass style step journeys, mobile-responsive layouts, and clear calls to action."
+    },
+    {
+      frame: 'f-robuster',
+      title: 'Mobile App: Robuster Ride',
+      text: "Ride-hailing mobile concept featuring upfront price transparency, multi-stop route planning, and flexible scheduling."
+    },
+    {
+      frame: 'f-process',
+      title: 'Design Process & Capabilities',
+      text: "A structured 4-stage pipeline: Domain Discovery → Stories & Flows → High-Fidelity Validation → Engineering Handoff."
+    },
+    {
+      frame: 'f-contact',
+      title: "Let's Build Something Usable",
+      text: "Ready to collaborate? Reach out through this interactive contact form, view the resume, or get in touch for enterprise UX roles."
+    }
+  ];
+
+  var tourGuide = document.getElementById('tourGuide');
+  var tgStepNum = document.getElementById('tgStepNum');
+  var tgTotalSteps = document.getElementById('tgTotalSteps');
+  var tgTitle = document.getElementById('tgTitle');
+  var tgText = document.getElementById('tgText');
+  var tgDots = document.getElementById('tgDots');
+  var tgPrev = document.getElementById('tgPrev');
+  var tgNext = document.getElementById('tgNext');
+  var tgClose = document.getElementById('tgClose');
+  var currentTourIndex = 0;
+
+  function updateTourCardUI(index) {
+    if (!TOUR_STEPS.length) return;
+    index = Math.max(0, Math.min(index, TOUR_STEPS.length - 1));
+    currentTourIndex = index;
+    var step = TOUR_STEPS[index];
+
+    if (tgStepNum) tgStepNum.textContent = index + 1;
+    if (tgTotalSteps) tgTotalSteps.textContent = TOUR_STEPS.length;
+    if (tgTitle) tgTitle.textContent = step.title;
+    if (tgText) tgText.textContent = step.text;
+
+    if (tgPrev) tgPrev.disabled = (index === 0);
+    if (tgNext) {
+      if (index === TOUR_STEPS.length - 1) {
+        tgNext.textContent = 'Finish tour ✦';
+      } else {
+        tgNext.textContent = 'Next step →';
+      }
+    }
+
+    if (tgDots) {
+      tgDots.innerHTML = '';
+      TOUR_STEPS.forEach(function (s, i) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'tg-d' + (i === index ? ' active' : '');
+        dot.title = 'Step ' + (i + 1) + ': ' + s.title;
+        dot.setAttribute('aria-label', 'Go to tour step ' + (i + 1));
+        dot.onclick = function (e) {
+          e.stopPropagation();
+          renderTourStep(i);
+        };
+        tgDots.appendChild(dot);
+      });
+    }
+  }
+
+  function renderTourStep(index) {
+    if (!TOUR_STEPS.length) return;
+    index = Math.max(0, Math.min(index, TOUR_STEPS.length - 1));
+    updateTourCardUI(index);
+    var step = TOUR_STEPS[index];
+    select(step.frame, true);
+    setLayersOpen(false);
+  }
+
+  function startGuidedTour() {
+    closeWelcome();
+    var wasSimple = isSimple();
+    isTourActive = true;
+    if (tourGuide) {
+      tourGuide.classList.add('active');
+    }
+    if (wasSimple) {
+      setSimple(false);
+      setTimeout(function () {
+        renderTourStep(0);
+      }, 80);
+    } else {
+      renderTourStep(0);
+    }
+  }
+
+  function endGuidedTour() {
+    isTourActive = false;
+    if (tourGuide) {
+      tourGuide.classList.remove('active');
+    }
+  }
+
+  if (tgClose) tgClose.onclick = endGuidedTour;
+  if (tgPrev) tgPrev.onclick = function () { if (currentTourIndex > 0) renderTourStep(currentTourIndex - 1); };
+  if (tgNext) {
+    tgNext.onclick = function () {
+      if (currentTourIndex < TOUR_STEPS.length - 1) {
+        renderTourStep(currentTourIndex + 1);
+      } else {
+        endGuidedTour();
+      }
+    };
+  }
+
+  window.startGuidedTour = startGuidedTour;
+  window.endGuidedTour = endGuidedTour;
 
   /* ---------- first-visit welcome card ---------- */
   var welcome = document.getElementById('welcome');
@@ -957,7 +1119,7 @@
       '<button class="wbtn primary" id="wExplore" type="button">Explore the canvas ✦</button>' +
       '<button class="wbtn" id="wTour" type="button">Take guided tour →</button>' +
       '<button class="wlink" id="wSimple" type="button">Prefer a normal scrolling page? Switch to Page view</button></div></div>';
-    document.getElementById('wTour').onclick = function () { closeWelcome(); select(frames[0].id, true); };
+    document.getElementById('wTour').onclick = function () { startGuidedTour(); };
     document.getElementById('wExplore').onclick = function () { closeWelcome(); };
     document.getElementById('wSimple').onclick = function () { closeWelcome(); setSimple(true); };
     welcome.addEventListener('click', function (e) { if (e.target === welcome) closeWelcome(); });
@@ -1151,7 +1313,11 @@
   }
   if (!isSimple()) {
     setTimeout(function () { var b = bounds(frames[0]); flyTo(b.x, b.y, b.w, b.h); }, 60);
-    if (!seen() || /[?&](welcome|guide)/i.test(location.search)) setTimeout(function () { if (welcome) welcome.classList.add('open'); }, 700);
+    if (/[?&]tour/i.test(location.search)) {
+      setTimeout(startGuidedTour, 700);
+    } else if (!seen() || /[?&](welcome|guide)/i.test(location.search)) {
+      setTimeout(function () { if (welcome) welcome.classList.add('open'); }, 700);
+    }
   }
   // fonts and images change heights after first paint, so lay out again once they've loaded
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
