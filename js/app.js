@@ -52,7 +52,7 @@
       '<div class="actions"><a class="btn solid" data-fly="f-' + D.projects[0].id + '" href="#">See the work ↓</a>' +
       '<a class="btn" data-resume href="#">Download resume</a></div>' +
       '<div class="facts">' + P.facts.map(function (f) { return '<span class="tag">' + esc(f) + '</span>'; }).join('') + '</div>' +
-      '</div><div class="hero-media"><div class="polaroid"><img src="' + esc(P.portrait) + '" alt="' + esc(P.name) + '">' +
+      '</div><div class="hero-media"><div class="polaroid"><div class="polaroid-photo"><img src="' + esc(P.portrait) + '" alt="' + esc(P.name) + '"></div>' +
       '<div class="pcap">' + esc(P.name) + '<span>' + esc(P.role) + '</span></div></div></div></div>';
   }
   function toolIcon(type, prefix) {
