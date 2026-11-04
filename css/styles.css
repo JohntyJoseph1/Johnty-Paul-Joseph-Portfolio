@@ -49,19 +49,51 @@
 
   .frame {
     position: absolute;
-    contain: layout style;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+  }
+  .frame:has(.pin.open) {
+    z-index: 25 !important;
   }
   .frame::after { content:""; position:absolute; inset:0; pointer-events:none; border:calc(1.5px*var(--inv)) solid var(--sel); opacity:0; transition:opacity .12s; }
   @media (hover: hover) {
     .frame:hover::after { opacity:.55; }
   }
   .frame.selected::after { opacity:0; }
-  .frame-label { position:absolute; left:0; bottom:100%; margin-bottom:calc(8px * min(var(--inv), 1.5)); transform:scale(min(var(--inv), 1.5)); transform-origin:0 100%;
-    max-width:calc(100% / min(var(--inv), 1.5)); overflow:hidden; text-overflow:ellipsis;
-    display:flex; align-items:center; gap:6px; font:500 13px/1 'Geist',sans-serif; color:var(--ui-dim); white-space:nowrap; cursor:pointer; }
-  .frame-label:hover { color:var(--ui); }
+  .frame-label {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    margin-bottom: calc(8px * min(var(--inv), 1.5));
+    transform: scale(min(var(--inv), 1.5));
+    transform-origin: 0 100%;
+    max-width: calc(100% / min(var(--inv), 1.5));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 13px/1 'Geist', sans-serif;
+    color: var(--ui-dim);
+    white-space: nowrap;
+    cursor: pointer;
+    padding: 3px 6px;
+    margin-left: -6px;
+    border-radius: 6px;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: color .12s, background-color .12s, transform .12s;
+    pointer-events: auto;
+  }
+  .frame-label:hover {
+    color: var(--ui);
+    background: rgba(0, 0, 0, 0.05);
+  }
+  :root[data-theme="dark"] .frame-label:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .frame-label:active {
+    transform: scale(min(var(--inv), 1.5)) scale(0.96);
+  }
   .frame-label svg { width:13px; height:13px; flex-shrink:0; }
   .frame.selected .frame-label { color:var(--sel); font-weight:600; }
   .frame-box {
@@ -72,6 +104,7 @@
     overflow:hidden;
     box-shadow:0 1px 0 rgba(0,0,0,.04), 0 24px 60px rgba(20,20,40,.14);
     transition:background-color .2s ease, color .2s ease;
+    contain: layout style;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
@@ -418,9 +451,10 @@
   }
 
   /* ---------- Comment pins + cursor ---------- */
-  .pin { position:absolute; z-index:6; transform:scale(var(--inv)); transform-origin:0 100%; }
-  .pin > button { width:32px; height:32px; border-radius:50% 50% 50% 0; border:2px solid #fff; background:#7B61FF; color:#fff; font:700 13px/1 'Geist',sans-serif; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.25); }
-  .pin .pop { display:none; position:absolute; left:40px; bottom:0; width:250px; background:var(--chrome); color:var(--ui); border:1px solid var(--line); border-radius:12px; padding:12px 14px; box-shadow:var(--shadow); font:400 13.5px/1.45 'Geist',sans-serif; text-align:left; }
+  .pin { position:absolute; z-index:10; transform:scale(var(--inv)); transform-origin:0 100%; }
+  .pin > button { width:32px; height:32px; border-radius:50% 50% 50% 0; border:2px solid #fff; background:#7B61FF; color:#fff; font:700 13px/1 'Geist',sans-serif; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.25); touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  .pin.open { z-index:50 !important; }
+  .pin .pop { display:none; position:absolute; left:40px; bottom:0; width:250px; background:var(--chrome); color:var(--ui); border:1px solid var(--line); border-radius:12px; padding:12px 14px; box-shadow:0 12px 32px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08); font:400 13.5px/1.45 'Geist',sans-serif; text-align:left; z-index:60; }
   .pin.pin-left .pop { left:auto; right:40px; }
   .pin.open .pop { display:block; }
   .pin .pop b { display:block; font:600 12.5px/1 'Geist',sans-serif; margin-bottom:6px; }
@@ -503,16 +537,17 @@
   .irow span:first-child { color:var(--ui-dim); flex:none; } .irow span:last-child { text-align:right; }
   .igo { margin-top:14px; width:100%; }
 
-  #toolbar { bottom:16px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:2px; padding:6px; background:var(--ui); color:var(--chrome); border-radius:12px; box-shadow:var(--shadow); }
-  #toolbar .iconbtn { color:inherit; }
+  #toolbar { bottom:16px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:3px; padding:5px 8px; background:var(--ui); color:var(--chrome); border-radius:999px; box-shadow:0 10px 30px rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.1); -webkit-tap-highlight-color:transparent; user-select:none; -webkit-user-select:none; }
+  #toolbar * { -webkit-tap-highlight-color:transparent; }
+  #toolbar .iconbtn { color:inherit; border-radius:8px; margin:0 1px; flex-shrink:0; }
   #toolbar .iconbtn:hover { background:rgba(255,255,255,.14); }
   :root[data-theme="dark"] #toolbar .iconbtn:hover { background:rgba(0,0,0,.12); }
-  #toolbar .iconbtn.on { background:var(--sel); color:#fff; border-color:var(--sel); box-shadow:0 2px 8px rgba(13,153,255,.45); }
+  #toolbar .iconbtn.on { background:var(--sel); color:#fff; border-color:var(--sel); box-shadow:0 1px 5px rgba(13,153,255,.4); border-radius:8px; }
   #toolbar .iconbtn.on svg { stroke:#fff; }
   :root[data-theme="dark"] #toolbar .iconbtn.on { background:var(--sel); color:#111115; border-color:var(--sel); }
   :root[data-theme="dark"] #toolbar .iconbtn.on svg { stroke:#111115; }
-  #toolbar .zr { font:500 12.5px/1 'Geist',sans-serif; min-width:50px; text-align:center; }
-  #toolbar .sep { width:1px; height:20px; background:currentColor; opacity:.25; margin:0 4px; }
+  #toolbar .zr { font:500 12.5px/1 'Geist',sans-serif; min-width:46px; text-align:center; font-variant-numeric:tabular-nums; flex-shrink:0; }
+  #toolbar .sep { width:1px; height:18px; background:currentColor; opacity:.22; margin:0 3px; flex-shrink:0; }
   #toast { bottom:74px; left:50%; transform:translateX(-50%); background:var(--chrome); color:var(--ui); border:1px solid var(--line); border-radius:999px; padding:9px 16px; font:500 12.5px/1 'Geist',sans-serif; box-shadow:var(--shadow); transition:opacity .5s; white-space:nowrap; pointer-events:none; }
 
   @media (max-width:1180px){ #inspect{display:none;} }
@@ -1173,6 +1208,8 @@
   align-items:center;
   gap:6px;
   padding:0 6px;
+  flex-shrink:0;
+  white-space:nowrap;
 }
 .tinfo b {
   font:600 12px/1 'Geist',sans-serif;
@@ -1184,18 +1221,32 @@
 }
 .tinfo span {
   font:400 11px/1 'Geist Mono',monospace;
-  opacity:.65;
+  opacity:.75;
   color:inherit;
+  white-space:nowrap !important;
+  display:inline-block;
+  font-variant-numeric:tabular-nums;
+}
+@media (max-width: 820px) {
+  #tNext span {
+    display: none !important;
+  }
+  #tNext {
+    width: 28px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
 }
 @media (max-width: 768px) {
   #toolbar {
     bottom: 12px;
     max-width: calc(100vw - 16px);
     width: auto;
-    padding: 4px 6px;
-    gap: 1px;
+    padding: 4px 7px;
+    gap: 3px;
     box-sizing: border-box;
     justify-content: center;
+    border-radius: 999px;
   }
   #toolbar .zr {
     min-width: 36px;
@@ -1205,6 +1256,12 @@
     width: 28px;
     height: 28px;
     padding: 0;
+    border-radius: 7px;
+    margin: 0 1px;
+  }
+  #toolbar .iconbtn.on {
+    border-radius: 7px;
+    box-shadow: 0 1px 4px rgba(13,153,255,.35);
   }
   #toolbar .iconbtn svg {
     width: 15px;
@@ -1213,8 +1270,9 @@
   .tbtn {
     height: 26px;
     padding: 0 6px;
-    font-size: 11.5px;
+    font-size: 11px;
     gap: 3px;
+    border-radius: 6px;
   }
   .tbtn svg {
     width: 12px;
@@ -1222,7 +1280,7 @@
   }
   .tinfo {
     padding: 0 3px;
-    gap: 3px;
+    gap: 2px;
   }
   .tinfo b {
     display: none !important;
@@ -1230,12 +1288,21 @@
   .tinfo span {
     font-size: 11px;
     font-weight: 500;
+    white-space: nowrap !important;
+    display: inline-block;
+    min-width: 30px;
+    text-align: center;
   }
   #tNext span {
     display: none !important;
   }
   #tNext {
-    width: 28px;
+    width: 26px;
+    padding: 0;
+    justify-content: center;
+  }
+  #tPrev {
+    width: 26px;
     padding: 0;
     justify-content: center;
   }
@@ -1246,11 +1313,38 @@
 }
 @media (max-width: 440px) {
   #toolbar #themeBtn {
-    display: none;
+    display: none !important;
   }
   #toolbar {
-    padding: 3px 5px;
-    gap: 0;
+    padding: 3px 6px;
+    gap: 2px;
+  }
+  #toolbar .iconbtn {
+    width: 27px;
+    height: 27px;
+    margin: 0;
+  }
+  .tbtn {
+    height: 26px;
+  }
+  #tPrev, #tNext {
+    width: 26px;
+  }
+  #toolbar .zr {
+    min-width: 32px;
+    font-size: 10.5px;
+  }
+  .tinfo span {
+    min-width: 28px;
+    font-size: 10.5px;
+  }
+  #toolbar .sep {
+    margin: 0 1px;
+  }
+}
+@media (max-width: 360px) {
+  #toolbar #fitBtn {
+    display: none !important;
   }
 }
 #welcome { position:fixed; inset:0; z-index:150; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(20,20,30,.38); backdrop-filter:blur(3px); }

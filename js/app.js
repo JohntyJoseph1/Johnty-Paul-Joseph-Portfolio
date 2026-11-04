@@ -542,7 +542,7 @@
   viewport.addEventListener('pointerdown', function (e) {
     if (animId) { cancelAnimationFrame(animId); animId = null; }
     if (isSimple()) return;
-    if (e.target.closest('a,button,input,select,textarea,label,.pin,.embed-guard')) return;
+    if (e.target.closest('a,button,input,select,textarea,label,.pin,.embed-guard,.frame-label')) return;
     drag = { x: e.clientX, y: e.clientY, px: panX, py: panY, moved: false, target: e.target };
     viewport.setPointerCapture(e.pointerId);
   });
@@ -556,9 +556,18 @@
     if (!drag) return;
     var was = drag; drag = null; viewport.classList.remove('panning');
     if (!was.moved && e.type === 'pointerup') {
+      var fl = was.target.closest && was.target.closest('.frame-label');
       var f = was.target.closest && was.target.closest('.frame');
-      select(f ? f.id : null, false);
-      [].forEach.call(document.querySelectorAll('.pin.open'), function (p) { p.classList.remove('open'); });
+      if (fl && f) {
+        select(f.id, true);
+      } else {
+        select(f ? f.id : null, false);
+      }
+      [].forEach.call(document.querySelectorAll('.pin.open'), function (p) {
+        p.classList.remove('open');
+        var parentF = p.closest('.frame');
+        if (parentF) parentF.style.zIndex = '';
+      });
       reguard();
     }
   }
@@ -594,6 +603,14 @@
   var lastTapTime = 0, lastTapX = 0, lastTapY = 0, lastTapFrameId = null;
   viewport.addEventListener('click', function (e) {
     if (e.target.closest('input, textarea, select')) return;
+    var fl = e.target.closest('.frame-label');
+    if (fl) {
+      e.preventDefault();
+      e.stopPropagation();
+      var frame = fl.closest('.frame');
+      if (frame) select(frame.id, true);
+      return;
+    }
     var f = e.target.closest('.frame');
     if (!f) return;
 
@@ -666,12 +683,27 @@
     b.addEventListener('click', function (e) {
       e.stopPropagation();
       var p = b.parentElement, was = p.classList.contains('open');
-      [].forEach.call(document.querySelectorAll('.pin.open'), function (x) { x.classList.remove('open'); });
-      if (!was) p.classList.add('open');
+      [].forEach.call(document.querySelectorAll('.pin.open'), function (x) {
+        x.classList.remove('open');
+        var parentF = x.closest('.frame');
+        if (parentF) parentF.style.zIndex = '';
+      });
+      if (!was) {
+        p.classList.add('open');
+        var pf = p.closest('.frame');
+        if (pf) pf.style.zIndex = '25';
+      }
     });
   });
   function toggleComments() {
     var isHidden = document.body.classList.toggle('hide-pins');
+    if (isHidden) {
+      [].forEach.call(document.querySelectorAll('.pin.open'), function (x) {
+        x.classList.remove('open');
+        var parentF = x.closest('.frame');
+        if (parentF) parentF.style.zIndex = '';
+      });
+    }
     var btn = document.getElementById('pinsBtn');
     if (btn) {
       btn.classList.toggle('on', !isHidden);
@@ -679,6 +711,16 @@
     }
   }
   document.getElementById('pinsBtn').onclick = toggleComments;
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.pin')) {
+      [].forEach.call(document.querySelectorAll('.pin.open'), function (x) {
+        x.classList.remove('open');
+        var parentF = x.closest('.frame');
+        if (parentF) parentF.style.zIndex = '';
+      });
+    }
+  });
 
   /* Figma embeds: guard layer so panning works across them until you click */
   var guards = [].slice.call(document.querySelectorAll('.embed-guard'));
