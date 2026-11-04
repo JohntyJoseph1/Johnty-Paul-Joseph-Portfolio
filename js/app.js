@@ -384,6 +384,7 @@
   /* ---------- auto layout ---------- */
   var GAP_X = 100, GAP_Y = 160;
   function layout() {
+    if (isSimple()) return;
     var y = 0;
     plan.forEach(function (r) {
       r.forEach(function (f) { var el = document.getElementById(f.id); f.el = el; el.style.width = f.w + 'px'; el.style.height = 'auto'; el.style.left = '0px'; el.style.top = '0px'; });
@@ -407,11 +408,20 @@
     var r = (!simple && window.innerWidth > 1180) ? 262 : 0;
     return { l: l, r: r, t: 48, b: 76 };
   }
+  var lastInv = null, lastFar = null;
   function apply() {
     canvas.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
-    canvas.style.setProperty('--inv', (1 / scale).toFixed(4));
-    zr.textContent = Math.round(scale * 100) + '%';
-    document.body.classList.toggle('far', scale < 0.4);
+    var inv = (1 / scale).toFixed(4);
+    if (inv !== lastInv) {
+      lastInv = inv;
+      canvas.style.setProperty('--inv', inv);
+      zr.textContent = Math.round(scale * 100) + '%';
+      var isFar = scale < 0.4;
+      if (isFar !== lastFar) {
+        lastFar = isFar;
+        document.body.classList.toggle('far', isFar);
+      }
+    }
   }
   function clamp(s) { return Math.min(2, Math.max(0.1, s)); }
   function zoomAt(cx, cy, ns) { ns = clamp(ns); panX = cx - ((cx - panX) / scale) * ns; panY = cy - ((cy - panY) / scale) * ns; scale = ns; apply(); }
@@ -537,7 +547,7 @@
     viewport.setPointerCapture(e.pointerId);
   });
   viewport.addEventListener('pointermove', function (e) {
-    if (!drag) return;
+    if (!drag || pd) return;
     var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (!drag.moved && Math.hypot(dx, dy) > 5) { drag.moved = true; viewport.classList.add('panning'); hideToast(); }
     if (drag.moved) { panX = drag.px + dx; panY = drag.py + dy; apply(); }
@@ -824,8 +834,16 @@
       btnLayers.setAttribute('aria-label', on ? 'Toggle navigation menu' : 'Toggle layers');
     }
     if (backdrop) backdrop.classList.remove('open');
-    if (!on) { setTimeout(function () { layout(); select(frames[0].id, false); var b = bounds(frames[0]); flyTo(b.x, b.y, b.w, b.h); }, 30); }
-    else window.scrollTo(0, 0);
+    if (!on) {
+      requestAnimationFrame(function () {
+        layout();
+        select(frames[0].id, false);
+        var b = bounds(frames[0]);
+        flyTo(b.x, b.y, b.w, b.h);
+      });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }
   document.getElementById('simpleBtn').onclick = function () { setSimple(!isSimple()); };
   var vBtn = document.getElementById('viewBtn'); if (vBtn) vBtn.onclick = function () { setSimple(!isSimple()); };
@@ -1013,8 +1031,8 @@
 
   /* ---------- start ---------- */
   buildLayers();
-  if (window.innerWidth < 760) document.body.classList.add('simple');
   layout();
+  if (window.innerWidth < 760) document.body.classList.add('simple');
   select('f-hero', false);
   apply();
   tourUpdate();
