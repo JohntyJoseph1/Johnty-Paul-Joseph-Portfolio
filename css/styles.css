@@ -37,18 +37,22 @@
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; background:var(--canvas); }
   body { font-family:'Geist',system-ui,-apple-system,sans-serif; color:var(--ui); -webkit-font-smoothing:antialiased; overflow:hidden; }
-  img { max-width:100%; display:block; }
+  img { max-width:100%; display:block; -webkit-user-drag:none; user-drag:none; }
   button { font:inherit; color:inherit; }
   a { color:inherit; }
+  input, textarea, [contenteditable="true"] { user-select:text; -webkit-user-select:text; }
 
   /* ---------- Canvas ---------- */
   #viewport { position:fixed; inset:0; overflow:hidden; cursor:grab; touch-action:none;
-    background-color:var(--canvas); background-image:radial-gradient(circle, var(--dot) 1.2px, transparent 1.3px); background-size:24px 24px; }
+    background-color:var(--canvas); background-image:radial-gradient(circle, var(--dot) 1.2px, transparent 1.3px); background-size:24px 24px;
+    user-select:none; -webkit-user-select:none; }
   #viewport.panning { cursor:grabbing; }
-  #canvas { position:absolute; left:0; top:0; transform-origin:0 0; --inv:1; }
+  #canvas { position:absolute; left:0; top:0; transform-origin:0 0; --inv:1; user-select:none; -webkit-user-select:none; }
 
   .frame {
     position: absolute;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .frame:has(.pin.open) {
     z-index: 25 !important;
@@ -559,6 +563,8 @@
     overflow-y: auto !important;
     overflow-x: hidden !important;
     background: var(--canvas) !important;
+    user-select: text;
+    -webkit-user-select: text;
   }
   body.simple #viewport {
     position: static;
@@ -566,6 +572,8 @@
     background: transparent;
     cursor: auto;
     touch-action: auto;
+    user-select: text;
+    -webkit-user-select: text;
   }
   body.simple #canvas {
     position: static;
@@ -574,6 +582,8 @@
     max-width: 1140px;
     margin: 0 auto;
     box-sizing: border-box;
+    user-select: text;
+    -webkit-user-select: text;
   }
   body.simple .frame {
     position: static;
@@ -582,6 +592,8 @@
     margin-bottom: 48px;
     box-sizing: border-box;
     contain: none;
+    user-select: text;
+    -webkit-user-select: text;
   }
   body.simple .frame::after,
   body.simple #selection,

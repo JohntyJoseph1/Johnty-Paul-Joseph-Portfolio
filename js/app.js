@@ -549,19 +549,38 @@
     if (animId) { cancelAnimationFrame(animId); animId = null; }
     if (isSimple()) return;
     if (e.target.closest('a,button,input,select,textarea,label,.pin,.embed-guard,.frame-label')) return;
+    if (window.getSelection) {
+      var sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    }
+    if (e.button === 0 || e.pointerType === 'touch') {
+      e.preventDefault();
+    }
     drag = { x: e.clientX, y: e.clientY, px: panX, py: panY, moved: false, target: e.target };
-    viewport.setPointerCapture(e.pointerId);
+    try { viewport.setPointerCapture(e.pointerId); } catch (_) {}
   });
   viewport.addEventListener('pointermove', function (e) {
     if (!drag || pd) return;
     var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-    if (!drag.moved && Math.hypot(dx, dy) > 5) { drag.moved = true; viewport.classList.add('panning'); hideToast(); }
+    if (!drag.moved && Math.hypot(dx, dy) > 5) {
+      drag.moved = true;
+      viewport.classList.add('panning');
+      hideToast();
+      if (window.getSelection) {
+        var sel = window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      }
+    }
     if (drag.moved) { panX = drag.px + dx; panY = drag.py + dy; apply(); }
   });
   function endDrag(e) {
     if (!drag) return;
     var was = drag; drag = null; viewport.classList.remove('panning');
     if (!was.moved && e.type === 'pointerup') {
+      if (window.getSelection) {
+        var sel = window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      }
       var fl = was.target.closest && was.target.closest('.frame-label');
       var f = was.target.closest && was.target.closest('.frame');
       if (fl && f) {
@@ -598,6 +617,10 @@
   // Desktop double-click
   viewport.addEventListener('dblclick', function (e) {
     if (e.target.closest('input, textarea, select')) return;
+    if (window.getSelection) {
+      var sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    }
     var f = e.target.closest('.frame');
     if (f) {
       e.preventDefault();
