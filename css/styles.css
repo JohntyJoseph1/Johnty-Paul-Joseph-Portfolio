@@ -1118,14 +1118,14 @@
   .stage-thumbs { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0, 1fr); gap:10px; width:100%; box-sizing:border-box; }
   .stage-thumb { min-width:0; width:100%; box-sizing:border-box; border:1.5px solid var(--rule); border-radius:12px; background:#fff; padding:7px 7px 9px; display:flex; flex-direction:column; gap:7px; cursor:pointer; text-align:left; transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease, background-color .15s ease; outline:none; }
   .stage-thumb:hover { border-color:var(--ink); transform:translateY(-2px); box-shadow:0 6px 14px rgba(20,20,40,.08); }
-  .stage-thumb.is-active { border-color:var(--sel); background:var(--sel-soft); box-shadow:0 0 0 1.5px var(--sel), 0 4px 14px rgba(13,153,255,.16); transform:translateY(-1px); }
+  .stage-thumb.is-active { border-color:var(--sel); background:#fff; box-shadow:0 2px 8px rgba(13,153,255,.14), 0 1px 3px rgba(0,0,0,.04); transform:translateY(-1px); }
   .thumb-preview { height:76px; width:100%; box-sizing:border-box; border-radius:8px; background:var(--paper-2); display:flex; align-items:center; justify-content:center; overflow:hidden; padding:4px; }
   .thumb-preview img { max-height:90%; max-width:90%; width:auto; height:auto; object-fit:contain; display:block; filter:drop-shadow(0 2px 5px rgba(0,0,0,.15)); }
   .thumb-meta { min-width:0; width:100%; display:flex; align-items:center; gap:6px; overflow:hidden; padding:0 2px; box-sizing:border-box; }
   .thumb-dot { width:6px; height:6px; border-radius:50%; background:var(--rule); flex-shrink:0; transition:background-color .15s; }
-  .stage-thumb.is-active .thumb-dot { background:var(--sel); box-shadow:0 0 0 2px rgba(13,153,255,.25); }
+  .stage-thumb.is-active .thumb-dot { background:var(--sel); box-shadow:0 0 0 2px rgba(13,153,255,.2); }
   .thumb-cap { min-width:0; display:block; font:500 11.5px/1.3 'Geist',sans-serif; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .stage-thumb.is-active .thumb-cap { color:var(--sel); font-weight:600; }
+  .stage-thumb.is-active .thumb-cap { color:var(--ink); font-weight:600; }
 
   /* Dark mode overrides for showcase */
   :root[data-theme="dark"] .stage { background:#111115; background-image:radial-gradient(circle, #25252D 1.2px, transparent 1.3px); border-color:var(--rule); }
@@ -1134,10 +1134,10 @@
   :root[data-theme="dark"] .stage-expand:hover { border-color:var(--lime); color:var(--lime); background:#32323D; box-shadow:0 3px 10px rgba(0,0,0,.4); }
   :root[data-theme="dark"] .stage-thumb { background:var(--paper-2); border-color:var(--rule); }
   :root[data-theme="dark"] .stage-thumb:hover { border-color:var(--ui-dim); transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.5); }
-  :root[data-theme="dark"] .stage-thumb.is-active { border-color:var(--sel); background:rgba(56,178,255,.14); }
+  :root[data-theme="dark"] .stage-thumb.is-active { border-color:var(--sel); background:var(--paper-2); box-shadow:0 2px 10px rgba(56,178,255,.18); }
   :root[data-theme="dark"] .thumb-preview { background:#111115; }
   :root[data-theme="dark"] .thumb-cap { color:var(--ink-3); }
-  :root[data-theme="dark"] .stage-thumb.is-active .thumb-cap { color:var(--sel); }
+  :root[data-theme="dark"] .stage-thumb.is-active .thumb-cap { color:var(--ink); font-weight:600; }
   :root[data-theme="dark"] .stage-img { filter:drop-shadow(0 14px 34px rgba(0,0,0,.7)); }
 
   @media (prefers-color-scheme: dark) {
@@ -1147,10 +1147,10 @@
     :root[data-theme="auto"] .stage-expand:hover { border-color:var(--lime); color:var(--lime); background:#32323D; box-shadow:0 3px 10px rgba(0,0,0,.4); }
     :root[data-theme="auto"] .stage-thumb { background:var(--paper-2); border-color:var(--rule); }
     :root[data-theme="auto"] .stage-thumb:hover { border-color:var(--ui-dim); transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.5); }
-    :root[data-theme="auto"] .stage-thumb.is-active { border-color:var(--sel); background:rgba(56,178,255,.14); }
+    :root[data-theme="auto"] .stage-thumb.is-active { border-color:var(--sel); background:var(--paper-2); box-shadow:0 2px 10px rgba(56,178,255,.18); }
     :root[data-theme="auto"] .thumb-preview { background:#111115; }
     :root[data-theme="auto"] .thumb-cap { color:var(--ink-3); }
-    :root[data-theme="auto"] .stage-thumb.is-active .thumb-cap { color:var(--sel); }
+    :root[data-theme="auto"] .stage-thumb.is-active .thumb-cap { color:var(--ink); font-weight:600; }
     :root[data-theme="auto"] .stage-img { filter:drop-shadow(0 14px 34px rgba(0,0,0,.7)); }
   }
 
