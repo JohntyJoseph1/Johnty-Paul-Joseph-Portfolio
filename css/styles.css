@@ -174,19 +174,21 @@
   .hero .lede { font-size:20px; line-height:1.5; color:var(--ink-2); max-width:34em; }
   .hero .actions { display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
   .hero .facts { margin-top:36px; display:flex; flex-wrap:wrap; gap:8px; }
-  .polaroid { background:#fff; padding:12px 12px 16px; border:1px solid var(--rule); box-shadow:0 18px 40px rgba(20,20,40,.14); transform:rotate(2.2deg) translateZ(0); -webkit-backface-visibility:hidden; backface-visibility:hidden; transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease; cursor:pointer; will-change:transform; }
+  .polaroid { background:#fff; padding:12px 12px 16px; border:1px solid var(--rule); box-shadow:0 18px 40px rgba(20,20,40,.14); transform:rotate(2.2deg); transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease; cursor:pointer; }
   :root[data-theme="dark"] .polaroid { background:var(--paper-2); border-color:var(--rule); box-shadow:0 18px 40px rgba(0,0,0,.5); }
   @media (prefers-color-scheme: dark) {
     :root[data-theme="auto"] .polaroid { background:var(--paper-2); border-color:var(--rule); box-shadow:0 18px 40px rgba(0,0,0,.5); }
   }
-  .polaroid:hover { transform:rotate(0deg) translateY(-4px) translateZ(0); box-shadow:0 24px 50px rgba(20,20,40,.20); }
-  :root[data-theme="dark"] .polaroid:hover { box-shadow:0 24px 54px rgba(0,0,0,.65); }
+  .polaroid:hover { transform:rotate(0deg) translateY(-8px); box-shadow:0 26px 54px rgba(20,20,40,.22); }
+  :root[data-theme="dark"] .polaroid:hover { box-shadow:0 28px 60px rgba(0,0,0,.68); }
   @media (prefers-color-scheme: dark) {
-    :root[data-theme="auto"] .polaroid:hover { box-shadow:0 24px 54px rgba(0,0,0,.65); }
+    :root[data-theme="auto"] .polaroid:hover { box-shadow:0 28px 60px rgba(0,0,0,.68); }
   }
-  .polaroid-photo { width:100%; aspect-ratio:1/1.05; overflow:hidden; border-radius:4px; background:#111; transform:translateZ(0); -webkit-mask-image:-webkit-radial-gradient(white, black); isolation:isolate; }
-  .polaroid-photo img, .polaroid > img { width:100%; height:100%; aspect-ratio:1/1.05; object-fit:cover; object-position:50% 15%; transform:translate3d(0, 0, 0) scale(1.06); -webkit-backface-visibility:hidden; backface-visibility:hidden; transition:transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); display:block; border-radius:3px; will-change:transform; image-rendering:-webkit-optimize-contrast; }
-  .polaroid:hover .polaroid-photo img, .polaroid:hover > img { transform:translate3d(0, 0, 0) scale(1.00); }
+  .polaroid-photo { position:relative; width:100%; aspect-ratio:1/1.05; overflow:hidden; border-radius:4px; background:#111; }
+  .polaroid-photo::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 55%); opacity:0; transition:opacity 0.35s ease; pointer-events:none; border-radius:4px; }
+  .polaroid:hover .polaroid-photo::after { opacity:1; }
+  .polaroid-photo img, .polaroid > img { width:100%; height:100%; aspect-ratio:1/1.05; object-fit:cover; object-position:50% 15%; display:block; border-radius:3px; transition:filter 0.35s ease; }
+  .polaroid:hover .polaroid-photo img, .polaroid:hover > img { filter:contrast(1.02) brightness(1.02); }
   .polaroid .pcap { margin-top:12px; font:600 15px/1.25 'Bricolage Grotesque',sans-serif; }
   .polaroid .pcap span { display:block; font:400 12.5px/1.4 'Geist Mono',monospace; color:var(--ink-3); margin-top:4px; }
 
@@ -844,23 +846,20 @@
     width: 100%;
     max-width: 360px;
     padding: 14px 14px 18px;
-    transform: rotate(2deg) translateZ(0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
+    transform: rotate(2deg);
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
     cursor: pointer;
-    will-change: transform;
   }
   body.simple .hero .polaroid:hover {
-    transform: rotate(0deg) translateY(-6px) translateZ(0);
-    box-shadow: 0 28px 56px rgba(20, 20, 40, 0.22);
+    transform: rotate(0deg) translateY(-8px);
+    box-shadow: 0 30px 60px rgba(20, 20, 40, 0.24);
   }
   :root[data-theme="dark"] body.simple .hero .polaroid:hover {
-    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 30px 64px rgba(0, 0, 0, 0.72);
   }
   @media (prefers-color-scheme: dark) {
     :root[data-theme="auto"] body.simple .hero .polaroid:hover {
-      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 30px 64px rgba(0, 0, 0, 0.72);
     }
   }
 
