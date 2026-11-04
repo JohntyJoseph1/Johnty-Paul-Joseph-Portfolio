@@ -179,7 +179,7 @@
   @media (prefers-color-scheme: dark) {
     :root[data-theme="auto"] .polaroid { background:var(--paper-2); border-color:var(--rule); box-shadow:0 18px 40px rgba(0,0,0,.5); }
   }
-  .polaroid img { width:100%; aspect-ratio:1/1.05; object-fit:cover; object-position:50% 20%; }
+  .polaroid img { width:100%; aspect-ratio:1/1.05; object-fit:cover; object-position:50% 15%; border-radius:3px; }
   .polaroid .pcap { margin-top:12px; font:600 15px/1.25 'Bricolage Grotesque',sans-serif; }
   .polaroid .pcap span { display:block; font:400 12.5px/1.4 'Geist Mono',monospace; color:var(--ink-3); margin-top:4px; }
 
