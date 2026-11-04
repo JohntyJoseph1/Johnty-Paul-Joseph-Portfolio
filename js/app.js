@@ -927,6 +927,19 @@
       setSimple(!isSimple());
     };
   }
+  var dGuide = document.getElementById('drawerGuideBtn');
+  if (dGuide) {
+    dGuide.onclick = function () {
+      setLayersOpen(false);
+      if (isSimple()) {
+        setSimple(false);
+        setTimeout(function () { if (welcome) welcome.classList.add('open'); }, 350);
+      } else {
+        if (welcome) welcome.classList.add('open');
+      }
+    };
+  }
+  window.openGuide = function () { if (welcome) welcome.classList.add('open'); };
 
   /* ---------- first-visit welcome card ---------- */
   var welcome = document.getElementById('welcome');
@@ -1138,7 +1151,7 @@
   }
   if (!isSimple()) {
     setTimeout(function () { var b = bounds(frames[0]); flyTo(b.x, b.y, b.w, b.h); }, 60);
-    if (!seen() || /[?&]welcome/.test(location.search)) setTimeout(function () { welcome.classList.add('open'); }, 700);
+    if (!seen() || /[?&](welcome|guide)/i.test(location.search)) setTimeout(function () { if (welcome) welcome.classList.add('open'); }, 700);
   }
   // fonts and images change heights after first paint, so lay out again once they've loaded
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);

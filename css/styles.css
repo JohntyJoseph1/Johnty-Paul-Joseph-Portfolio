@@ -516,6 +516,10 @@
   .layers-footer { margin-top:auto; padding-top:10px; border-top:1px solid var(--line); flex-shrink:0; }
   .drawer-view-btn { display:flex; align-items:center; justify-content:space-between; width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--chrome-2); color:var(--ui); font:600 12.5px/1 'Geist',sans-serif; cursor:pointer; transition:all .15s ease; box-sizing:border-box; }
   .drawer-view-btn:hover { background:var(--sel-soft); color:var(--sel); border-color:var(--sel); }
+  .drawer-view-btn.secondary { background:transparent; border-color:var(--line); opacity:.85; }
+  .drawer-view-btn.secondary:hover { opacity:1; background:var(--chrome-2); color:var(--ui); border-color:var(--line); }
+  :root[data-theme="dark"] .drawer-view-btn.secondary { background:transparent; border-color:rgba(255,255,255,.1); }
+  :root[data-theme="dark"] .drawer-view-btn.secondary:hover { background:#2A2A33; border-color:rgba(255,255,255,.2); color:#fff; }
   .drawer-view-btn svg { flex-shrink:0; margin-right:7px; }
   .drawer-view-btn span:first-of-type { flex:1; text-align:left; }
   .drawer-badge { font-size:10.5px; padding:2px 6px; border-radius:999px; background:var(--sel); color:#fff; font-weight:700; }
