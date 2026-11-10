@@ -241,7 +241,30 @@
     }
 
     var bottomGallery = hasShowcase ? '' : galleryHTML(p.gallery);
-    return head + '<p class="summary">' + esc(p.summary) + '</p>' + visual + bullets + bottomGallery + linksHTML(p.links);
+
+    var csTrigger = '';
+    if (p.caseStudyTitle || p.modules) {
+      var isHr = p.id === 'hr';
+      var triggerKicker = isHr ? '11-Module Architecture' : 'Case Study & Architecture';
+      var triggerTitle = isHr ? '11 Modules Shipped · 5 Role State Machines' : (p.caseStudyTitle || 'Interactive Case Study');
+      var triggerDesc = isHr ? 'Inspect all 11 modules (Onboarding to Exit), 5 mapped roles, pre-commit batch locks, and engineering alignment.' : (p.caseStudySub || 'Explore system architecture, workflows, and core design decisions.');
+      var btnLabel = isHr ? 'Explore 11 Modules & Case Study' : 'Read Case Study';
+      csTrigger = '<div class="project-cs-card" data-open-cs="' + esc(p.id) + '" role="button" tabindex="0" title="Click to open deep dive drawer">' +
+        '<div class="pcsc-content">' +
+          '<div class="pcsc-badge"><span class="pcsc-dot"></span><span>' + esc(triggerKicker) + '</span></div>' +
+          '<div class="pcsc-title">' + esc(triggerTitle) + '</div>' +
+          '<p class="pcsc-desc">' + esc(triggerDesc) + '</p>' +
+        '</div>' +
+        '<div class="pcsc-action">' +
+          '<span class="pcsc-btn">' +
+            '<span>' + esc(btnLabel) + '</span>' +
+            '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>' +
+          '</span>' +
+        '</div>' +
+      '</div>';
+    }
+
+    return head + '<p class="summary">' + esc(p.summary) + '</p>' + visual + csTrigger + bullets + bottomGallery + linksHTML(p.links);
   }
   function processBlock() {
     var X = D.process;
@@ -410,7 +433,9 @@
     var layersEl = document.getElementById('layers');
     var layersVisible = layersEl && !layersEl.classList.contains('collapsed') && layersEl.style.display !== 'none';
     var l = (!simple && window.innerWidth > 900 && layersVisible) ? 236 : 0;
-    var r = (!simple && window.innerWidth > 1180) ? 262 : 0;
+    var inspectEl = document.getElementById('inspect');
+    var isInspectOpen = inspectEl && inspectEl.classList.contains('open');
+    var r = (!simple && window.innerWidth > 900 && isInspectOpen) ? (inspectEl.offsetWidth || 460) : 0;
     var b = isTourActive ? (window.innerWidth < 500 ? 210 : 220) : 76;
     return { l: l, r: r, t: 48, b: b };
   }
@@ -443,19 +468,51 @@
     }
     animId = requestAnimationFrame(step);
   }
-  function flyTo(x, y, w, h, pad) {
+  function flyTo(x, y, w, h, pad, forceFitAll) {
     var isNarrow = window.innerWidth < 700;
     var defPad = isNarrow ? 20 : 48;
-    pad = pad == null ? defPad : pad; var i = insets();
-    var aw = viewport.clientWidth - i.l - i.r, ah = viewport.clientHeight - i.t - i.b;
-    var ts = clamp(Math.min((aw - pad * 2) / w, (ah - pad * 2) / h));
-    animateTo(i.l + aw / 2 - (x + w / 2) * ts, i.t + ah / 2 - (y + h / 2) * ts, ts);
+    pad = pad == null ? defPad : pad;
+    var i = insets();
+    var aw = viewport.clientWidth - i.l - i.r;
+    var ah = viewport.clientHeight - i.t - i.b;
+
+    var sw = (aw - pad * 2) / w;
+    var sh = (ah - pad * 2) / h;
+
+    var ts, tx, ty;
+
+    if (!forceFitAll && (h > 900 || (h / w) > 1.2)) {
+      // For tall frames (e.g. 760x1315px project frames), fitting height forces an unreadable 39% zoom.
+      // Instead, frame comfortably by width at a crisp, readable scale (75% to 85%):
+      ts = clamp(Math.min(0.85, Math.max(0.72, sw)));
+      tx = i.l + (aw - w * ts) / 2 - x * ts;
+
+      var padTop = isNarrow ? 20 : 36;
+      if (h * ts <= ah - padTop * 2) {
+        ty = i.t + (ah - h * ts) / 2 - y * ts;
+      } else {
+        ty = i.t + padTop - y * ts;
+      }
+    } else {
+      ts = clamp(Math.min(sw, sh));
+      tx = i.l + aw / 2 - (x + w / 2) * ts;
+      ty = i.t + ah / 2 - (y + h / 2) * ts;
+    }
+
+    animateTo(tx, ty, ts);
   }
-  function bounds(el) { return { x: +el.dataset.x, y: +el.dataset.y, w: +el.dataset.w, h: +el.dataset.h }; }
+  function bounds(el) {
+    if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+    var w = el.dataset.w ? +el.dataset.w : (el.offsetWidth || 1200);
+    var h = el.dataset.h ? +el.dataset.h : (el.offsetHeight || 800);
+    var x = el.dataset.x ? +el.dataset.x : 0;
+    var y = el.dataset.y ? +el.dataset.y : 0;
+    return { x: x, y: y, w: w, h: h };
+  }
   function fitAll() {
     var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
     frames.forEach(function (f) { var b = bounds(f); minX = Math.min(minX, b.x); minY = Math.min(minY, b.y - 30); maxX = Math.max(maxX, b.x + b.w); maxY = Math.max(maxY, b.y + b.h); });
-    flyTo(minX, minY, maxX - minX, maxY - minY, 30);
+    flyTo(minX, minY, maxX - minX, maxY - minY, 30, true);
   }
 
   /* ---------- layers + inspect + selection ---------- */
@@ -473,15 +530,352 @@
       });
     });
   }
+  var inspectDrawer = document.getElementById('inspect');
+  var inspectBackdrop = document.getElementById('inspectBackdrop');
+  var inspectCloseBtn = document.getElementById('inspectClose');
+
+  function openInspectDrawer(id) {
+    if (id && selected !== id) {
+      select(id, !isSimple());
+    } else if (id) {
+      renderInspect(id);
+    }
+    if (inspectDrawer) inspectDrawer.classList.add('open');
+    if (inspectBackdrop) inspectBackdrop.classList.add('open');
+  }
+
+  function closeInspectDrawer() {
+    if (inspectDrawer) inspectDrawer.classList.remove('open');
+    if (inspectBackdrop) inspectBackdrop.classList.remove('open');
+    if (!isSimple() && selected) {
+      var frameEl = document.getElementById(selected);
+      if (frameEl) {
+        var b = bounds(frameEl);
+        if (b && b.w) flyTo(b.x, b.y, b.w, b.h);
+      }
+    }
+  }
+
+  if (inspectCloseBtn) {
+    inspectCloseBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeInspectDrawer();
+    });
+    inspectCloseBtn.addEventListener('pointerdown', function (e) {
+      e.stopPropagation();
+    });
+  }
+
+  if (inspectBackdrop) {
+    inspectBackdrop.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeInspectDrawer();
+    });
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (inspectDrawer && inspectDrawer.classList.contains('open')) {
+        closeInspectDrawer();
+      }
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    var closeBtn = e.target.closest('#inspectClose, .inspect-close-btn');
+    if (closeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeInspectDrawer();
+      return;
+    }
+    var trigger = e.target.closest('[data-open-cs]');
+    if (trigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      var pid = trigger.getAttribute('data-open-cs');
+      openInspectDrawer('f-' + pid);
+      return;
+    }
+  });
+
+  function moduleIcon(m) {
+    var name = (m.name || '').toLowerCase();
+    var tag = (m.tag || '').toLowerCase();
+
+    // HRMS Modules
+    if (name.indexOf('onboarding') >= 0 || tag.indexOf('lifecycle') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>';
+    }
+    if (name.indexOf('attendance') >= 0 || (tag.indexOf('time') >= 0 && tag.indexOf('ops') >= 0)) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>';
+    }
+    if (name.indexOf('leave') >= 0 || tag.indexOf('compliance') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>';
+    }
+    if (name.indexOf('payroll') >= 0 || tag.indexOf('statutory') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><line x1="6" y1="12" x2="6.01" y2="12"/><line x1="18" y1="12" x2="18.01" y2="12"/></svg>';
+    }
+    if (name.indexOf('asset') >= 0 || tag.indexOf('infra') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/><line x1="8" y1="16" x2="16" y2="16"/></svg>';
+    }
+    if (name.indexOf('employee') >= 0 || tag.indexOf('identity') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M7 21v-2a4 4 0 0 1 3-3.87"/><circle cx="12" cy="7" r="4"/></svg>';
+    }
+    if (name.indexOf('analytic') >= 0 || tag.indexOf('intelligence') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>';
+    }
+    if (name.indexOf('timesheet') >= 0 || (tag.indexOf('operations') >= 0 && name.indexOf('attend') < 0)) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>';
+    }
+    if (name.indexOf('learning') >= 0 || tag.indexOf('training') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 3 6 4 6 4s6-1 6-4v-5"/></svg>';
+    }
+    if (name.indexOf('task') >= 0 || name.indexOf('project') >= 0 || tag.indexOf('productivity') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 12 2 2 4-4"/></svg>';
+    }
+    if (name.indexOf('document') >= 0 || tag.indexOf('governance') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+    }
+
+    // Toshiv & Other Modules
+    if (name.indexOf('discovery') >= 0 || tag.indexOf('discovery') >= 0 || tag.indexOf('pipelines') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>';
+    }
+    if (name.indexOf('country') >= 0 || name.indexOf('visa') >= 0 || tag.indexOf('programs') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+    }
+    if (name.indexOf('tracker') >= 0 || tag.indexOf('workflow') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M12 19h4.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H12"/></svg>';
+    }
+    if (name.indexOf('booking') >= 0 || tag.indexOf('conversion') >= 0 || name.indexOf('consult') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="15" r="2"/></svg>';
+    }
+    if (name.indexOf('vehicle') >= 0 || tag.indexOf('mobility') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.5l2-3h7l2 3H19a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>';
+    }
+    if (name.indexOf('package') >= 0 || tag.indexOf('rental') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
+    }
+    if (name.indexOf('routing') >= 0 || name.indexOf('route') >= 0 || tag.indexOf('navigation') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M12 19h4.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H12"/></svg>';
+    }
+    if (name.indexOf('privacy') >= 0 || tag.indexOf('privacy') >= 0 || name.indexOf('otp') >= 0 || name.indexOf('voip') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>';
+    }
+    if (name.indexOf('rating') >= 0 || name.indexOf('diagnostic') >= 0 || tag.indexOf('diagnostic') >= 0 || tag.indexOf('retention') >= 0) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+    }
+
+    // Default icon
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>';
+  }
+
   function renderInspect(id) {
-    var body = document.getElementById('inspectBody'), d = INFO[id];
-    if (!d) { body.innerHTML = '<div class="isub">Click a frame to see its details.</div>'; return; }
-    var b = bounds(document.getElementById(id));
+    var body = document.getElementById('inspectBody');
+    var kicker = document.getElementById('inspectKickerText');
+    var inspectEl = document.getElementById('inspect');
+    if (!body) return;
+
+    if (!id) {
+      if (kicker) kicker.textContent = 'Inspect';
+      if (inspectEl) inspectEl.classList.remove('is-project');
+      body.innerHTML = '<div class="isub" style="margin-top:12px;">Click any frame or project to inspect details, architecture, and case studies.</div>';
+      return;
+    }
+
+    var frameEl = document.getElementById(id);
+    var b = frameEl ? bounds(frameEl) : { w: 0, h: 0, x: 0, y: 0 };
+    var projectObj = null;
+    if (id.indexOf('f-') === 0) {
+      var projId = id.substring(2);
+      projectObj = D.projects.find(function (item) { return item.id === projId; });
+    }
+
+    if (projectObj) {
+      if (inspectEl) inspectEl.classList.add('is-project');
+      if (kicker) kicker.textContent = projectObj.id === 'hr' ? 'Enterprise B2B · Case Study' : (projectObj.id === 'toshiv' ? 'Web Platform · Case Study' : 'Mobile Concept · Case Study');
+
+      var p = projectObj;
+      var chips = p.chips ? '<div class="d-chips-row">' + chipsHTML(p.chips) + '</div>' : '';
+      var title = p.caseStudyTitle || p.title;
+      var sub = p.caseStudySub || p.summary;
+
+      // Executive Metrics Grid
+      var metricsHTML = '';
+      if (p.metrics && p.metrics.length) {
+        metricsHTML = '<div class="d-kpi-grid">' +
+          p.metrics.map(function (m) {
+            var lbl = (m.label || '').toUpperCase();
+            var isGreen = lbl.indexOf('BUILD') >= 0 || lbl.indexOf('LIVE') >= 0;
+            return '<div class="d-kpi-card">' +
+              '<div class="d-kpi-val">' + esc(m.num) + '</div>' +
+              '<span class="d-kpi-pill' + (isGreen ? ' green' : '') + '">' + esc(m.label) + '</span>' +
+              '<div class="d-kpi-note">' + esc(m.desc) + '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>';
+      }
+
+      // Tabs Header
+      var hasModules = p.modules && p.modules.length;
+      var hasCaseStudy = p.caseStudySections && p.caseStudySections.length;
+      var modCount = hasModules ? p.modules.length : 0;
+      var csCount = hasCaseStudy ? p.caseStudySections.length : 0;
+
+      var tabsHeader = '<div class="d-tabs" role="tablist">' +
+        (hasModules ? '<button class="d-tab-btn active" data-tab="tabModules" type="button" role="tab"><span>Modules</span><span class="d-tab-badge">' + modCount + '</span></button>' : '') +
+        (hasCaseStudy ? '<button class="d-tab-btn' + (!hasModules ? ' active' : '') + '" data-tab="tabCaseStudy" type="button" role="tab"><span>Case Study</span><span class="d-tab-badge">' + csCount + '</span></button>' : '') +
+        '<button class="d-tab-btn' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" data-tab="tabSpecs" type="button" role="tab"><span>Specs</span></button>' +
+      '</div>';
+
+      // Tab 1: Modules & Core Views
+      var tab1HTML = '';
+      if (hasModules) {
+        var viewsHTML = '';
+        if (p.coreViews && p.coreViews.length) {
+          viewsHTML = '<div class="d-sh"><span class="d-sh-num">01</span><span>Core UI Views Shipped</span></div>' +
+            '<div class="d-views-list">' +
+              p.coreViews.map(function (v) {
+                var devTag = v.title.indexOf('Mobile') >= 0 ? 'Mobile' : 'Desktop';
+                var cleanTitle = v.title.replace(/\s*\((Desktop|Mobile|Foldable)\)\s*/gi, '');
+                return '<div class="d-view-card">' +
+                  '<div class="d-vc-header">' +
+                    '<h4 class="d-vc-title">' + esc(cleanTitle) + '</h4>' +
+                    '<span class="d-vc-tag">' + esc(devTag) + '</span>' +
+                  '</div>' +
+                  '<p class="d-vc-desc">' + esc(v.desc) + '</p>' +
+                '</div>';
+              }).join('') +
+            '</div>';
+        }
+
+        var modulesHTML = '<div class="d-sh"><span class="d-sh-num">02</span><span>' + (p.id === 'hr' ? '11-Module Workforce Directory' : 'System Modules') + '</span></div>' +
+          '<div class="d-modules-list">' +
+            p.modules.map(function (m) {
+              return '<div class="d-module-item">' +
+                '<div class="d-mi-icon" aria-hidden="true">' + moduleIcon(m) + '</div>' +
+                '<div class="d-mi-body">' +
+                  '<div class="d-mi-header">' +
+                    '<span class="d-mi-name">' + esc(m.name) + '</span>' +
+                    '<span class="d-mi-tag">' + esc(m.tag) + '</span>' +
+                  '</div>' +
+                  '<p class="d-mi-desc">' + esc(m.desc) + '</p>' +
+                '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+
+        tab1HTML = '<div class="d-tab-pane active" id="tabModules" role="tabpanel">' + viewsHTML + modulesHTML + '</div>';
+      }
+
+      // Tab 2: Case Study
+      var tab2HTML = '';
+      if (hasCaseStudy) {
+        tab2HTML = '<div class="d-tab-pane' + (!hasModules ? ' active' : '') + '" id="tabCaseStudy" role="tabpanel">' +
+          '<div class="d-cs-container">' +
+            p.caseStudySections.map(function (cs) {
+              var rolesHTML = '';
+              if (cs.roles && cs.roles.length) {
+                rolesHTML = '<div class="d-roles-grid">' +
+                  cs.roles.map(function (r) {
+                    return '<div class="d-role-card">' +
+                      '<div class="d-rc-name">' + esc(r.role) + '</div>' +
+                      '<div class="d-rc-desc">' + esc(r.desc) + '</div>' +
+                    '</div>';
+                  }).join('') +
+                '</div>';
+              }
+              var numPrefix = cs.num ? '<span class="d-cs-num">' + esc(cs.num) + '</span> ' : '';
+              return '<div class="d-cs-block">' +
+                '<h3 class="d-cs-title">' + numPrefix + esc(cs.title) + '</h3>' +
+                '<p class="d-cs-text">' + esc(cs.text) + '</p>' +
+                rolesHTML +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+      }
+
+      // Tab 3: Specs & Actions
+      var specsRows = '<div class="irow"><span>Frame Size</span><span>' + b.w + ' × ' + b.h + ' px</span></div>';
+      if (p.inspect && p.inspect.length) {
+        p.inspect.forEach(function (r) {
+          specsRows += '<div class="irow"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
+        });
+      }
+
+      var linksHTML = '';
+      if (p.links && p.links.length) {
+        linksHTML = '<div class="d-links-block" style="margin-top:14px;">' +
+          p.links.map(function (lk) {
+            return '<a class="pbtn primary" href="' + esc(lk.url) + '" target="_blank" rel="noopener" style="display:flex;justify-content:center;margin-bottom:8px;text-align:center;">' + esc(lk.label) + '</a>';
+          }).join('') +
+        '</div>';
+      }
+
+      var zoomBtn = !isSimple() ? '<button class="pbtn igo" style="justify-content:center;margin-top:10px;width:100%;">Zoom to frame</button>' : '';
+
+      var tab3HTML = '<div class="d-tab-pane' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" id="tabSpecs" role="tabpanel">' +
+        '<div class="d-specs-wrap">' + specsRows + zoomBtn + linksHTML + '</div>' +
+      '</div>';
+
+      body.innerHTML = '<div class="d-hero">' +
+        chips +
+        '<h2 class="d-title">' + esc(title) + '</h2>' +
+        '<p class="d-sub">' + esc(sub) + '</p>' +
+        metricsHTML +
+        tabsHeader +
+        tab1HTML +
+        tab2HTML +
+        tab3HTML +
+      '</div>';
+
+      // Setup tab event listeners
+      body.querySelectorAll('.d-tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          body.querySelectorAll('.d-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+          body.querySelectorAll('.d-tab-pane').forEach(function (pane) { pane.classList.remove('active'); });
+          btn.classList.add('active');
+          var targetId = btn.getAttribute('data-tab');
+          var targetPane = body.querySelector('#' + targetId);
+          if (targetPane) targetPane.classList.add('active');
+        });
+      });
+
+      var igoBtn = body.querySelector('.igo');
+      if (igoBtn) {
+        igoBtn.addEventListener('click', function () {
+          var bb = bounds(document.getElementById(id));
+          flyTo(bb.x, bb.y, bb.w, bb.h);
+        });
+      }
+      return;
+    }
+
+    // Default inspector for non-project frames
+    if (inspectEl) inspectEl.classList.remove('is-project');
+    if (kicker) kicker.textContent = 'Frame Inspector';
+    var d = INFO[id];
+    if (!d) {
+      body.innerHTML = '<div class="isub" style="margin-top:12px;">Click a frame to see its details.</div>';
+      return;
+    }
     var rows = '<div class="irow"><span>Frame</span><span>' + b.w + ' × ' + b.h + '</span></div>';
-    d[2].forEach(function (r) { rows += '<div class="irow"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>'; });
+    d[2].forEach(function (r) {
+      rows += '<div class="irow"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
+    });
     body.innerHTML = '<div class="ititle">' + esc(d[0]) + '</div><div class="isub">' + esc(d[1]) + '</div>' + rows +
-      '<button class="pbtn igo" style="justify-content:center;">Zoom to frame</button>';
-    body.querySelector('.igo').addEventListener('click', function () { var bb = bounds(document.getElementById(id)); flyTo(bb.x, bb.y, bb.w, bb.h); });
+      (!isSimple() ? '<button class="pbtn igo" style="justify-content:center;">Zoom to frame</button>' : '');
+    var nonProjIgo = body.querySelector('.igo');
+    if (nonProjIgo) {
+      nonProjIgo.addEventListener('click', function () {
+        var bb = bounds(document.getElementById(id));
+        flyTo(bb.x, bb.y, bb.w, bb.h);
+      });
+    }
   }
   function updateSelection(fly) {
     var b = bounds(document.getElementById(selected));
@@ -519,10 +913,16 @@
         }
       }
       setLayersOpen(false);
+      renderInspect(id);
     } else {
       if (id) updateSelection(fly); else selEl.style.display = 'none';
       renderInspect(id);
       if (fly && isMobileDrawer()) setLayersOpen(false);
+      if (id && (id === 'f-hr' || id === 'f-toshiv' || id === 'f-ride')) {
+        if (fly) openInspectDrawer(id);
+      } else if (!id) {
+        closeInspectDrawer();
+      }
     }
     tourUpdate();
   }
@@ -561,7 +961,7 @@
   viewport.addEventListener('pointerdown', function (e) {
     if (animId) { cancelAnimationFrame(animId); animId = null; }
     if (isSimple()) return;
-    if (e.target.closest('a,button,input,select,textarea,label,.pin,.embed-guard,.frame-label')) return;
+    if (e.target.closest('a,button,input,select,textarea,label,.pin,.embed-guard,.frame-label,.project-cs-card')) return;
     if (window.getSelection) {
       var sel = window.getSelection();
       if (sel && sel.removeAllRanges) sel.removeAllRanges();
