@@ -37,7 +37,13 @@
     }).join('');
   }
   function listHTML(items) {
-    return '<ul class="list">' + items.map(function (b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul>';
+    return '<ul class="list">' + items.map(function (b) {
+      var parts = b.split(' — ');
+      if (parts.length === 2) {
+        return '<li><b>' + esc(parts[0]) + '</b> — ' + esc(parts[1]) + '</li>';
+      }
+      return '<li>' + esc(b) + '</li>';
+    }).join('') + '</ul>';
   }
 
   /* ---------- section builders ---------- */
@@ -731,28 +737,11 @@
         '<button class="d-tab-btn' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" data-tab="tabSpecs" type="button" role="tab"><span>Specs</span></button>' +
       '</div>';
 
-      // Tab 1: Modules & Core Views
+      // Tab 1: System Modules
       var tab1HTML = '';
       if (hasModules) {
-        var viewsHTML = '';
-        if (p.coreViews && p.coreViews.length) {
-          viewsHTML = '<div class="d-sh"><span class="d-sh-num">01</span><span>Core UI Views Shipped</span></div>' +
-            '<div class="d-views-list">' +
-              p.coreViews.map(function (v) {
-                var devTag = v.title.indexOf('Mobile') >= 0 ? 'Mobile' : 'Desktop';
-                var cleanTitle = v.title.replace(/\s*\((Desktop|Mobile|Foldable)\)\s*/gi, '');
-                return '<div class="d-view-card">' +
-                  '<div class="d-vc-header">' +
-                    '<h4 class="d-vc-title">' + esc(cleanTitle) + '</h4>' +
-                    '<span class="d-vc-tag">' + esc(devTag) + '</span>' +
-                  '</div>' +
-                  '<p class="d-vc-desc">' + esc(v.desc) + '</p>' +
-                '</div>';
-              }).join('') +
-            '</div>';
-        }
-
-        var modulesHTML = '<div class="d-sh"><span class="d-sh-num">02</span><span>' + (p.id === 'hr' ? '11-Module Workforce Directory' : 'System Modules') + '</span></div>' +
+        var modulesTitle = p.id === 'hr' ? '11-Module Workforce Directory' : (p.id === 'toshiv' ? 'System Modules & Pipelines' : 'System Architecture Modules');
+        var modulesHTML = '<div class="d-sh"><span class="d-sh-num">01</span><span>' + esc(modulesTitle) + '</span></div>' +
           '<div class="d-modules-list">' +
             p.modules.map(function (m) {
               return '<div class="d-module-item">' +
@@ -768,7 +757,7 @@
             }).join('') +
           '</div>';
 
-        tab1HTML = '<div class="d-tab-pane active" id="tabModules" role="tabpanel">' + viewsHTML + modulesHTML + '</div>';
+        tab1HTML = '<div class="d-tab-pane active" id="tabModules" role="tabpanel">' + modulesHTML + '</div>';
       }
 
       // Tab 2: Case Study

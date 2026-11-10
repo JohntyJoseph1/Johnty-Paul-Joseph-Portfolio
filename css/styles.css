@@ -55,7 +55,7 @@
     -webkit-user-select: none;
   }
   .frame:has(.pin.open) {
-    z-index: 25 !important;
+    z-index: 100 !important;
   }
   .frame::after { content:""; position:absolute; inset:0; pointer-events:none; border:calc(1.5px*var(--inv)) solid var(--sel); opacity:0; transition:opacity .12s; }
   @media (hover: hover) {
@@ -174,7 +174,7 @@
   .hero .lede { font-size:20px; line-height:1.5; color:var(--ink-2); max-width:34em; }
   .hero .actions { display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
   .hero .facts { margin-top:36px; display:flex; flex-wrap:wrap; gap:8px; }
-  .polaroid { background:#fff; padding:12px 12px 16px; border:1px solid var(--rule); box-shadow:0 18px 40px rgba(20,20,40,.14); transform:rotate(2deg); -webkit-transform:rotate(2deg); -webkit-backface-visibility:hidden; backface-visibility:hidden; perspective:1000px; -webkit-perspective:1000px; transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease; cursor:pointer; }
+  .polaroid { max-width:315px; margin:0 auto; background:#fff; padding:12px 12px 16px; border:1px solid var(--rule); box-shadow:0 18px 40px rgba(20,20,40,.14); transform:rotate(2deg); -webkit-transform:rotate(2deg); -webkit-backface-visibility:hidden; backface-visibility:hidden; perspective:1000px; -webkit-perspective:1000px; transition:transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease; cursor:pointer; }
   :root[data-theme="dark"] .polaroid { background:var(--paper-2); border-color:var(--rule); box-shadow:0 18px 40px rgba(0,0,0,.5); }
   @media (prefers-color-scheme: dark) {
     :root[data-theme="auto"] .polaroid { background:var(--paper-2); border-color:var(--rule); box-shadow:0 18px 40px rgba(0,0,0,.5); }
@@ -184,11 +184,11 @@
   @media (prefers-color-scheme: dark) {
     :root[data-theme="auto"] .polaroid:hover { box-shadow:0 28px 60px rgba(0,0,0,.68); }
   }
-  .polaroid-photo { position:relative; width:100%; aspect-ratio:1/1.05; overflow:hidden; border-radius:4px; background:#111; transform:translate3d(0, 0, 0); -webkit-transform:translate3d(0, 0, 0); contain:paint; -webkit-mask-image:-webkit-radial-gradient(white, black); }
+  .polaroid-photo { position:relative; width:100%; aspect-ratio:1/1.22; overflow:hidden; border-radius:4px; background:#111; transform:translate3d(0, 0, 0); -webkit-transform:translate3d(0, 0, 0); contain:paint; -webkit-mask-image:-webkit-radial-gradient(white, black); }
   .polaroid-photo::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 55%); opacity:0; transition:opacity 0.35s ease; pointer-events:none; border-radius:4px; z-index:2; }
   .polaroid:hover .polaroid-photo::after { opacity:1; }
-  .polaroid-photo img, .polaroid > img { width:100%; height:100%; aspect-ratio:1/1.05; object-fit:cover; object-position:50% 15%; display:block; border-radius:3px; transform:scale(1.06) translateZ(0); -webkit-transform:scale(1.06) translateZ(0); -webkit-backface-visibility:hidden; backface-visibility:hidden; transition:transform 0.38s cubic-bezier(0.16, 1, 0.3, 1); image-rendering:high-quality; image-rendering:-webkit-optimize-contrast; }
-  .polaroid:hover .polaroid-photo img, .polaroid:hover > img { transform:scale(1.00) translateZ(0); -webkit-transform:scale(1.00) translateZ(0); }
+  .polaroid-photo img, .polaroid > img { width:100%; height:100%; aspect-ratio:1/1.22; object-fit:cover; object-position:50% 15%; display:block; border-radius:3px; transform:scale(1.0) translateZ(0); -webkit-transform:scale(1.0) translateZ(0); -webkit-backface-visibility:hidden; backface-visibility:hidden; transition:transform 0.38s cubic-bezier(0.16, 1, 0.3, 1); image-rendering:high-quality; image-rendering:-webkit-optimize-contrast; }
+  .polaroid:hover .polaroid-photo img, .polaroid:hover > img { transform:scale(1.03) translateZ(0); -webkit-transform:scale(1.03) translateZ(0); }
   .polaroid .pcap { margin-top:12px; font:600 15px/1.25 'Bricolage Grotesque',sans-serif; }
   .polaroid .pcap span { display:block; font:400 12.5px/1.4 'Geist Mono',monospace; color:var(--ink-3); margin-top:4px; }
 
@@ -466,12 +466,12 @@
   /* ---------- Comment pins + cursor ---------- */
   .pin { position:absolute; z-index:10; transform:scale(var(--inv)); transform-origin:0 100%; }
   .pin > button { width:32px; height:32px; border-radius:50% 50% 50% 0; border:2px solid #fff; background:#7B61FF; color:#fff; font:700 13px/1 'Geist',sans-serif; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.25); touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-  .pin.open { z-index:50 !important; }
+  .pin.open { z-index:150 !important; }
   .pin .pop { display:none; position:absolute; left:40px; bottom:0; width:250px; background:var(--chrome); color:var(--ui); border:1px solid var(--line); border-radius:12px; padding:12px 14px; box-shadow:0 12px 32px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.08); font:400 13.5px/1.45 'Geist',sans-serif; text-align:left; z-index:60; }
   .pin.pin-left .pop { left:auto; right:40px; }
   .pin.open .pop { display:block; }
   .pin .pop b { display:block; font:600 12.5px/1 'Geist',sans-serif; margin-bottom:6px; }
-  .hide-pins .pin, .far .pin, .far #cursor { display:none; }
+  .hide-pins .pin, .far #cursor { display:none; }
   #cursor { position:absolute; z-index:7; pointer-events:none; left:0; top:0; animation:wander 16s ease-in-out infinite; }
   #cursor .cin { transform:scale(var(--inv)); transform-origin:0 0; }
   #cursor svg { width:22px; height:22px; display:block; filter:drop-shadow(0 2px 3px rgba(0,0,0,.25)); }
@@ -1251,6 +1251,11 @@
       width: 100%;
       justify-content: center;
     }
+  }
+
+  .list li b {
+    color: var(--ink);
+    font-weight: 600;
   }
 
   /* Off-canvas responsive behavior */

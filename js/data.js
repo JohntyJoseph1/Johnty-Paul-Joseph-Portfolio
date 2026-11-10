@@ -144,11 +144,10 @@ window.PORTFOLIO = {
       ],
       bulletsTitle: "What I worked on",
       bullets: [
-        "Onboarding and exit workflows, mapping who has to act at each step across HR, admin, IT, managers and employees",
-        "Statutory compliance and asset management flows, including data-heavy tables, status systems, filtering, validation and error states",
-        "HR analytics dashboards that turn dense workforce data into views people can act on",
-        "Navigation for a learning module covering courses, assessments and certifications for different roles",
-        "Close work with engineering so every flow is buildable"
+        "Employee Operating Portal (Desktop) — Self-service interface for Timesheets, Document Vault, Project Tasks, and Learning Management",
+        "Admin Governance Desk (Desktop) — Centralized admin hub for Onboarding, Assets, Attendance, Leave Hub, and HR Analytics",
+        "Mobile Attendance & Leave (Mobile) — Geofenced check-in, real-time quota balances, and missed check-out recovery alerts",
+        "One-Tap Attendance Flow (Mobile) — Pre-commit bottom-sheet verification dialog preventing accidental punch errors"
       ],
       links: [],
       inspect: [["Role", "UX Designer"], ["Scope", "HRMS and Payroll (11 Modules)"], ["Users", "HR, admin, IT, managers, employees"], ["Timeline", "Oct 2024 to present"], ["Tools", "Figma"], ["Platforms", "Web & Mobile"]],
@@ -212,11 +211,11 @@ window.PORTFOLIO = {
         { src: "assets/images/toshiv-foldable-view.png", caption: "02. Foldable & Tablet View (Foldable)" },
         { src: "assets/images/toshiv-mobile-home.png", caption: "03. Mobile Pocket UX (Mobile)" }
       ],
+      bulletsTitle: "What I worked on",
       bullets: [
-        "Planned the structure and the journeys: job discovery, visa support, document preparation and consultation booking",
-        "Styled the process steps like boarding passes, to borrow the credibility of real travel documents",
-        "Designed for desktop, mobile and a dedicated foldable/tablet breakpoint",
-        "Built it with Antigravity, working from my Figma designs"
+        "MacBook Desktop Suite (Desktop) — Verified international job pipelines & multi-country visa programs",
+        "Foldable & Tablet View (Foldable) — Adaptive dual-pane layout for foldable devices & tablets",
+        "Mobile Pocket UX (Mobile) — Touch-optimized consultation booking & instant visa queries"
       ],
       links: [{ label: "Visit travelbytoshiv.com ↗", url: "https://travelbytoshiv.com", solid: true }],
       inspect: [["Role", "Designer and builder"], ["Scope", "Structure, UX and build"], ["Devices", "Desktop, foldable/tablet, mobile"], ["Tools", "Figma, Antigravity"], ["Status", "Live in production"]],
@@ -283,12 +282,12 @@ window.PORTFOLIO = {
         { src: "assets/images/robuster-trip-schedule.png", caption: "03. Route Scheduler (Mobile)" },
         { src: "assets/images/robuster-trip-review-flow.png", caption: "04. Diagnostic Ratings (Mobile)" }
       ],
+      bulletsTitle: "What I worked on",
       bullets: [
-        "Onboarding flow highlighting upfront fare transparency and verified driver credentials",
-        "Vehicle category selection (Mini, Sedan, Luxury) with flexible hourly rental packages (1hr/15km to 6hr/60km)",
-        "Multi-stop geolocation route scheduler with departure time picker and dynamic waiting-time fare adjustments",
-        "Zero-leak native VoIP calling, direct in-app messaging, and prominent 4-digit pickup OTP verification",
-        "Sentiment-triggered post-trip diagnostic rating engine capturing targeted operational service feedback"
+        "Onboarding & Value (Mobile) — Upfront fare transparency & verified driver onboarding",
+        "Vehicle & Packages (Mobile) — Multi-tier categories & hourly rental packages",
+        "Route Scheduler (Mobile) — Multi-stop geolocation & departure time picker",
+        "Diagnostic Ratings (Mobile) — Sentiment-triggered feedback & service chips"
       ],
       links: [{ label: "Open prototype in Figma ↗", url: "https://www.figma.com/proto/NZh0zaFyyJ9n8RgHNuH37U/Robuster-Ride?node-id=1-846&p=f&t=wH7b3BN8TUfusbhd-1&scaling=scale-down&content-scaling=responsive&page-id=0%3A1&starting-point-node-id=1%3A846", solid: true }],
       inspect: [["Role", "Solo designer"], ["Scope", "Ride-booking app concept"], ["Started", "Jan 2024"], ["Tools", "Figma"], ["Prototype", "Available"]],
