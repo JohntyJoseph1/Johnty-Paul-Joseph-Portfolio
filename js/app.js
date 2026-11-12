@@ -391,7 +391,9 @@
   INFO['f-exp'] = ['Experience', D.experience.inspectSub, D.experience.inspect];
   INFO['f-contact'] = ['Contact', D.contact.inspectSub, [['Email', P.email], ['Phone', P.phone], ['Base', P.location]]];
 
-  var GROUPS = [['Cover', ['f-hero', 'f-about']], ['Work', D.projects.map(function (p) { return 'f-' + p.id; })], ['Process', ['f-process']], ['Details', ['f-caps', 'f-exp', 'f-contact']]];
+  var WORK_FRAME_IDS = D.projects.map(function (p) { return 'f-' + p.id; });
+  function isWorkFrame(id) { return WORK_FRAME_IDS.indexOf(id) >= 0; }
+  var GROUPS = [['Cover', ['f-hero', 'f-about']], ['Work', WORK_FRAME_IDS], ['Process', ['f-process']], ['Details', ['f-caps', 'f-exp', 'f-contact']]];
 
   var viewport = document.getElementById('viewport'), canvas = document.getElementById('canvas');
   canvas.insertAdjacentHTML('afterbegin', html);
@@ -487,8 +489,8 @@
 
     if (!forceFitAll && (h > 900 || (h / w) > 1.2)) {
       // For tall frames (e.g. 760x1315px project frames), fitting height forces an unreadable 39% zoom.
-      // Instead, frame comfortably by width at a crisp, readable scale (75% to 85%):
-      ts = clamp(Math.min(0.85, Math.max(0.72, sw)));
+      // Instead, frame comfortably by width at a readable scale up to 85%, down to 55% on narrower viewports:
+      ts = clamp(Math.min(0.85, Math.max(0.55, sw)));
       tx = i.l + (aw - w * ts) / 2 - x * ts;
 
       var padTop = isNarrow ? 20 : 36;
@@ -540,15 +542,25 @@
 
   var lastInspectTrigger = null;
 
-  function openInspectDrawer(id, triggerEl) {
+  function openInspectDrawer(id, triggerEl, skipSelect) {
     lastInspectTrigger = triggerEl || document.activeElement;
-    if (id && selected !== id) {
-      select(id, !isSimple());
-    } else if (id) {
-      renderInspect(id);
-    }
+    if (!isSimple()) setLayersOpen(false);
     if (inspectDrawer) inspectDrawer.classList.add('open');
     if (inspectBackdrop) inspectBackdrop.classList.add('open');
+    if (!skipSelect) {
+      if (id && selected !== id) {
+        select(id, !isSimple(), true);
+      } else if (id) {
+        renderInspect(id);
+        if (!isSimple()) {
+          var activeFrame = document.getElementById(id);
+          if (activeFrame) {
+            var fb = bounds(activeFrame);
+            if (fb && fb.w) flyTo(fb.x, fb.y, fb.w, fb.h);
+          }
+        }
+      }
+    }
     if (inspectCloseBtn) {
       requestAnimationFrame(function () {
         try { inspectCloseBtn.focus({ preventScroll: true }); } catch (_) {}
@@ -566,8 +578,14 @@
         if (b && b.w) flyTo(b.x, b.y, b.w, b.h);
       }
     }
-    if (restoreFocus !== false && lastInspectTrigger && typeof lastInspectTrigger.focus === 'function') {
-      try { lastInspectTrigger.focus({ preventScroll: true }); } catch (_) {}
+    if (restoreFocus !== false) {
+      var focusTarget = lastInspectTrigger;
+      if (!focusTarget || !document.body.contains(focusTarget) || focusTarget.offsetParent === null) {
+        focusTarget = document.getElementById('btnLayers');
+      }
+      if (focusTarget && typeof focusTarget.focus === 'function') {
+        try { focusTarget.focus({ preventScroll: true }); } catch (_) {}
+      }
     }
     lastInspectTrigger = null;
   }
@@ -917,7 +935,7 @@
       selEl.classList.add('focus-ring');
     }
   }
-  function select(id, fly) {
+  function select(id, fly, fromDrawer) {
     if (isTourActive) {
       if (!id && !fly) {
         if (typeof TOUR_STEPS !== 'undefined' && TOUR_STEPS[currentTourIndex]) id = TOUR_STEPS[currentTourIndex].frame;
@@ -944,14 +962,17 @@
       setLayersOpen(false);
       renderInspect(id);
     } else {
+      var isWork = !!(id && isWorkFrame(id));
+      if (isWork) {
+        // Collapse Layers and open Case Study before flyTo so viewport insets calculate without left sidebar overlap
+        setLayersOpen(false);
+        if (fly && !fromDrawer) openInspectDrawer(id, null, true);
+      } else if (fly && isMobileDrawer()) {
+        setLayersOpen(false);
+      }
+      if (!id) closeInspectDrawer(false);
       if (id) updateSelection(fly); else selEl.style.display = 'none';
       renderInspect(id);
-      if (fly && isMobileDrawer()) setLayersOpen(false);
-      if (id && (id === 'f-hr' || id === 'f-toshiv' || id === 'f-ride')) {
-        if (fly) openInspectDrawer(id);
-      } else if (!id) {
-        closeInspectDrawer();
-      }
     }
     tourUpdate();
   }
@@ -1350,7 +1371,10 @@
     if (isMobileDrawer()) {
       var shouldOpen = (typeof open === 'boolean') ? open : !l.classList.contains('open');
       l.classList.toggle('open', shouldOpen);
-      if (btn) btn.classList.toggle('on', shouldOpen);
+      if (btn) {
+        btn.classList.toggle('on', shouldOpen);
+        btn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      }
       if (backdrop) backdrop.classList.toggle('open', shouldOpen);
       l.style.display = '';
     } else {
@@ -1358,7 +1382,10 @@
       var shouldShow = (typeof open === 'boolean') ? open : isCurrentlyHidden;
       l.classList.toggle('collapsed', !shouldShow);
       l.style.display = shouldShow ? 'flex' : 'none';
-      if (btn) btn.classList.toggle('on', shouldShow);
+      if (btn) {
+        btn.classList.toggle('on', shouldShow);
+        btn.setAttribute('aria-expanded', shouldShow ? 'true' : 'false');
+      }
       if (backdrop) backdrop.classList.remove('open');
     }
   }
@@ -1774,14 +1801,19 @@
   buildWelcome();
   updateViewButtons(isSimple());
   window.addEventListener('resize', function () { updateViewButtons(isSimple()); });
-  if (isSimple()) {
-    var initH4 = document.getElementById('layers') ? document.getElementById('layers').querySelector('h4') : null;
-    if (initH4) initH4.textContent = 'Navigation';
-    var initBtn = document.getElementById('btnLayers');
-    if (initBtn) {
+  var initBtn = document.getElementById('btnLayers');
+  if (initBtn) {
+    var initLayersVisible = !isMobileDrawer() && !isSimple();
+    initBtn.classList.toggle('on', initLayersVisible);
+    initBtn.setAttribute('aria-expanded', initLayersVisible ? 'true' : 'false');
+    if (isSimple()) {
       initBtn.setAttribute('title', 'Toggle navigation menu');
       initBtn.setAttribute('aria-label', 'Toggle navigation menu');
     }
+  }
+  if (isSimple()) {
+    var initH4 = document.getElementById('layers') ? document.getElementById('layers').querySelector('h4') : null;
+    if (initH4) initH4.textContent = 'Navigation';
   }
   if ('IntersectionObserver' in window) {
     var navObserver = new IntersectionObserver(function (entries) {
