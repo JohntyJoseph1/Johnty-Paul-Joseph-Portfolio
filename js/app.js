@@ -251,20 +251,18 @@
     var csTrigger = '';
     if (p.caseStudyTitle || p.modules) {
       var isHr = p.id === 'hr';
-      var triggerKicker = isHr ? '11-Module Architecture' : 'Case Study & Architecture';
       var triggerTitle = isHr ? '11 Modules Shipped · 5 Role State Machines' : (p.caseStudyTitle || 'Interactive Case Study');
       var triggerDesc = isHr ? 'Inspect all 11 modules (Onboarding to Exit), 5 mapped roles, pre-commit batch locks, and engineering alignment.' : (p.caseStudySub || 'Explore system architecture, workflows, and core design decisions.');
       var btnLabel = isHr ? 'Explore 11 Modules & Case Study' : 'Read Case Study';
       csTrigger = '<div class="project-cs-card" data-open-cs="' + esc(p.id) + '" role="button" tabindex="0" title="Click to open deep dive drawer">' +
         '<div class="pcsc-content">' +
-          '<div class="pcsc-badge"><span class="pcsc-dot"></span><span>' + esc(triggerKicker) + '</span></div>' +
           '<div class="pcsc-title">' + esc(triggerTitle) + '</div>' +
           '<p class="pcsc-desc">' + esc(triggerDesc) + '</p>' +
         '</div>' +
         '<div class="pcsc-action">' +
           '<span class="pcsc-btn">' +
             '<span>' + esc(btnLabel) + '</span>' +
-            '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>' +
+            '<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>' +
           '</span>' +
         '</div>' +
       '</div>';
@@ -411,7 +409,7 @@
   });
 
   /* ---------- auto layout ---------- */
-  var GAP_X = 100, GAP_Y = 160;
+  var GAP_X = 88, GAP_Y = 120;
   function layout() {
     if (isSimple()) return;
     var y = 0;
@@ -441,7 +439,7 @@
     var l = (!simple && window.innerWidth > 900 && layersVisible) ? 236 : 0;
     var inspectEl = document.getElementById('inspect');
     var isInspectOpen = inspectEl && inspectEl.classList.contains('open');
-    var r = (!simple && window.innerWidth > 900 && isInspectOpen) ? (inspectEl.offsetWidth || 460) : 0;
+    var r = (!simple && window.innerWidth > 900 && isInspectOpen) ? (inspectEl.offsetWidth || 420) : 0;
     var b = isTourActive ? (window.innerWidth < 500 ? 210 : 220) : 76;
     return { l: l, r: r, t: 48, b: b };
   }
@@ -540,7 +538,10 @@
   var inspectBackdrop = document.getElementById('inspectBackdrop');
   var inspectCloseBtn = document.getElementById('inspectClose');
 
-  function openInspectDrawer(id) {
+  var lastInspectTrigger = null;
+
+  function openInspectDrawer(id, triggerEl) {
+    lastInspectTrigger = triggerEl || document.activeElement;
     if (id && selected !== id) {
       select(id, !isSimple());
     } else if (id) {
@@ -548,9 +549,14 @@
     }
     if (inspectDrawer) inspectDrawer.classList.add('open');
     if (inspectBackdrop) inspectBackdrop.classList.add('open');
+    if (inspectCloseBtn) {
+      requestAnimationFrame(function () {
+        try { inspectCloseBtn.focus({ preventScroll: true }); } catch (_) {}
+      });
+    }
   }
 
-  function closeInspectDrawer() {
+  function closeInspectDrawer(restoreFocus) {
     if (inspectDrawer) inspectDrawer.classList.remove('open');
     if (inspectBackdrop) inspectBackdrop.classList.remove('open');
     if (!isSimple() && selected) {
@@ -560,13 +566,17 @@
         if (b && b.w) flyTo(b.x, b.y, b.w, b.h);
       }
     }
+    if (restoreFocus !== false && lastInspectTrigger && typeof lastInspectTrigger.focus === 'function') {
+      try { lastInspectTrigger.focus({ preventScroll: true }); } catch (_) {}
+    }
+    lastInspectTrigger = null;
   }
 
   if (inspectCloseBtn) {
     inspectCloseBtn.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      closeInspectDrawer();
+      closeInspectDrawer(true);
     });
     inspectCloseBtn.addEventListener('pointerdown', function (e) {
       e.stopPropagation();
@@ -577,15 +587,18 @@
     inspectBackdrop.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      closeInspectDrawer();
+      closeInspectDrawer(true);
     });
   }
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      if (inspectDrawer && inspectDrawer.classList.contains('open')) {
-        closeInspectDrawer();
-      }
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var trigger = e.target.closest && e.target.closest('[data-open-cs]');
+    if (trigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      var pid = trigger.getAttribute('data-open-cs');
+      openInspectDrawer('f-' + pid, trigger);
     }
   });
 
@@ -594,7 +607,7 @@
     if (closeBtn) {
       e.preventDefault();
       e.stopPropagation();
-      closeInspectDrawer();
+      closeInspectDrawer(true);
       return;
     }
     var trigger = e.target.closest('[data-open-cs]');
@@ -602,7 +615,7 @@
       e.preventDefault();
       e.stopPropagation();
       var pid = trigger.getAttribute('data-open-cs');
-      openInspectDrawer('f-' + pid);
+      openInspectDrawer('f-' + pid, trigger);
       return;
     }
   });
@@ -688,7 +701,7 @@
     if (!id) {
       if (kicker) kicker.textContent = 'Inspect';
       if (inspectEl) inspectEl.classList.remove('is-project');
-      body.innerHTML = '<div class="isub" style="margin-top:12px;">Click any frame or project to inspect details, architecture, and case studies.</div>';
+      body.innerHTML = '<div class="isub">Click any frame or project to inspect details, architecture, and case studies.</div>';
       return;
     }
 
@@ -731,10 +744,10 @@
       var modCount = hasModules ? p.modules.length : 0;
       var csCount = hasCaseStudy ? p.caseStudySections.length : 0;
 
-      var tabsHeader = '<div class="d-tabs" role="tablist">' +
-        (hasModules ? '<button class="d-tab-btn active" data-tab="tabModules" type="button" role="tab"><span>Modules</span><span class="d-tab-badge">' + modCount + '</span></button>' : '') +
-        (hasCaseStudy ? '<button class="d-tab-btn' + (!hasModules ? ' active' : '') + '" data-tab="tabCaseStudy" type="button" role="tab"><span>Case Study</span><span class="d-tab-badge">' + csCount + '</span></button>' : '') +
-        '<button class="d-tab-btn' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" data-tab="tabSpecs" type="button" role="tab"><span>Specs</span></button>' +
+      var tabsHeader = '<div class="d-tabs" role="tablist" aria-label="Case study sections">' +
+        (hasModules ? '<button class="d-tab-btn active" id="tabBtnModules" data-tab="tabModules" type="button" role="tab" aria-selected="true" aria-controls="tabModules" tabindex="0"><span>Modules</span><span class="d-tab-badge">' + modCount + '</span></button>' : '') +
+        (hasCaseStudy ? '<button class="d-tab-btn' + (!hasModules ? ' active' : '') + '" id="tabBtnCaseStudy" data-tab="tabCaseStudy" type="button" role="tab" aria-selected="' + (!hasModules ? 'true' : 'false') + '" aria-controls="tabCaseStudy" tabindex="' + (!hasModules ? '0' : '-1') + '"><span>Case Study</span><span class="d-tab-badge">' + csCount + '</span></button>' : '') +
+        '<button class="d-tab-btn' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" id="tabBtnSpecs" data-tab="tabSpecs" type="button" role="tab" aria-selected="' + (!hasModules && !hasCaseStudy ? 'true' : 'false') + '" aria-controls="tabSpecs" tabindex="' + (!hasModules && !hasCaseStudy ? '0' : '-1') + '"><span>Specs</span></button>' +
       '</div>';
 
       // Tab 1: System Modules
@@ -757,13 +770,13 @@
             }).join('') +
           '</div>';
 
-        tab1HTML = '<div class="d-tab-pane active" id="tabModules" role="tabpanel">' + modulesHTML + '</div>';
+        tab1HTML = '<div class="d-tab-pane active" id="tabModules" role="tabpanel" aria-labelledby="tabBtnModules">' + modulesHTML + '</div>';
       }
 
       // Tab 2: Case Study
       var tab2HTML = '';
       if (hasCaseStudy) {
-        tab2HTML = '<div class="d-tab-pane' + (!hasModules ? ' active' : '') + '" id="tabCaseStudy" role="tabpanel">' +
+        tab2HTML = '<div class="d-tab-pane' + (!hasModules ? ' active' : '') + '" id="tabCaseStudy" role="tabpanel" aria-labelledby="tabBtnCaseStudy">' +
           '<div class="d-cs-container">' +
             p.caseStudySections.map(function (cs) {
               var rolesHTML = '';
@@ -798,16 +811,16 @@
 
       var linksHTML = '';
       if (p.links && p.links.length) {
-        linksHTML = '<div class="d-links-block" style="margin-top:14px;">' +
+        linksHTML = '<div class="d-links-block">' +
           p.links.map(function (lk) {
-            return '<a class="pbtn primary" href="' + esc(lk.url) + '" target="_blank" rel="noopener" style="display:flex;justify-content:center;margin-bottom:8px;text-align:center;">' + esc(lk.label) + '</a>';
+            return '<a class="pbtn primary" href="' + esc(lk.url) + '" target="_blank" rel="noopener">' + esc(lk.label) + '</a>';
           }).join('') +
         '</div>';
       }
 
-      var zoomBtn = !isSimple() ? '<button class="pbtn igo" style="justify-content:center;margin-top:10px;width:100%;">Zoom to frame</button>' : '';
+      var zoomBtn = !isSimple() ? '<button class="pbtn igo">Zoom to frame</button>' : '';
 
-      var tab3HTML = '<div class="d-tab-pane' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" id="tabSpecs" role="tabpanel">' +
+      var tab3HTML = '<div class="d-tab-pane' + (!hasModules && !hasCaseStudy ? ' active' : '') + '" id="tabSpecs" role="tabpanel" aria-labelledby="tabBtnSpecs">' +
         '<div class="d-specs-wrap">' + specsRows + zoomBtn + linksHTML + '</div>' +
       '</div>';
 
@@ -822,15 +835,41 @@
         tab3HTML +
       '</div>';
 
-      // Setup tab event listeners
-      body.querySelectorAll('.d-tab-btn').forEach(function (btn) {
+      body.scrollTop = 0;
+
+      // Setup accessible tab switching (click + ArrowLeft/Right/Home/End)
+      var tabBtns = [].slice.call(body.querySelectorAll('.d-tab-btn'));
+      function activateInspectTab(btn, moveFocus) {
+        tabBtns.forEach(function (b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+          b.setAttribute('tabindex', '-1');
+        });
+        body.querySelectorAll('.d-tab-pane').forEach(function (pane) { pane.classList.remove('active'); });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        btn.setAttribute('tabindex', '0');
+        var targetId = btn.getAttribute('data-tab');
+        var targetPane = body.querySelector('#' + targetId);
+        if (targetPane) targetPane.classList.add('active');
+        body.scrollTop = 0;
+        if (moveFocus) btn.focus();
+      }
+      tabBtns.forEach(function (btn, idx) {
         btn.addEventListener('click', function () {
-          body.querySelectorAll('.d-tab-btn').forEach(function (b) { b.classList.remove('active'); });
-          body.querySelectorAll('.d-tab-pane').forEach(function (pane) { pane.classList.remove('active'); });
-          btn.classList.add('active');
-          var targetId = btn.getAttribute('data-tab');
-          var targetPane = body.querySelector('#' + targetId);
-          if (targetPane) targetPane.classList.add('active');
+          activateInspectTab(btn, false);
+        });
+        btn.addEventListener('keydown', function (e) {
+          var nextIdx = -1;
+          if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabBtns.length;
+          else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + tabBtns.length) % tabBtns.length;
+          else if (e.key === 'Home') nextIdx = 0;
+          else if (e.key === 'End') nextIdx = tabBtns.length - 1;
+          if (nextIdx >= 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            activateInspectTab(tabBtns[nextIdx], true);
+          }
         });
       });
 
@@ -849,7 +888,7 @@
     if (kicker) kicker.textContent = 'Frame Inspector';
     var d = INFO[id];
     if (!d) {
-      body.innerHTML = '<div class="isub" style="margin-top:12px;">Click a frame to see its details.</div>';
+      body.innerHTML = '<div class="isub">Click a frame to see its details.</div>';
       return;
     }
     var rows = '<div class="irow"><span>Frame</span><span>' + b.w + ' × ' + b.h + '</span></div>';
@@ -857,7 +896,8 @@
       rows += '<div class="irow"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
     });
     body.innerHTML = '<div class="ititle">' + esc(d[0]) + '</div><div class="isub">' + esc(d[1]) + '</div>' + rows +
-      (!isSimple() ? '<button class="pbtn igo" style="justify-content:center;">Zoom to frame</button>' : '');
+      (!isSimple() ? '<button class="pbtn igo">Zoom to frame</button>' : '');
+    body.scrollTop = 0;
     var nonProjIgo = body.querySelector('.igo');
     if (nonProjIgo) {
       nonProjIgo.addEventListener('click', function () {
@@ -1074,15 +1114,38 @@
 
   function zoomStep(f) { var r = viewport.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, scale * f); }
   document.addEventListener('keydown', function (e) {
-    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    if (document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
     if (e.key === 'Escape') {
+      if (lb && lb.classList.contains('open')) {
+        closeLightbox();
+        return;
+      }
+      if (welcome && welcome.classList.contains('open')) {
+        closeWelcome();
+        return;
+      }
+      var openPins = document.querySelectorAll('.pin.open');
+      if (openPins.length) {
+        [].forEach.call(openPins, function (x) {
+          x.classList.remove('open');
+          var parentF = x.closest('.frame');
+          if (parentF) parentF.style.zIndex = '';
+        });
+        return;
+      }
+      if (inspectDrawer && inspectDrawer.classList.contains('open')) {
+        closeInspectDrawer(true);
+        return;
+      }
+      var openLayers = document.querySelector('#layers.open');
+      if (openLayers) {
+        setLayersOpen(false);
+        return;
+      }
       if (isTourActive && typeof endGuidedTour === 'function') {
         endGuidedTour();
         return;
       }
-      closeLightbox();
-      closeWelcome();
-      setLayersOpen(false);
       select(null, false);
       return;
     }
@@ -1151,6 +1214,7 @@
     var btn = document.getElementById('pinsBtn');
     if (btn) {
       btn.classList.toggle('on', !isHidden);
+      btn.setAttribute('aria-pressed', !isHidden ? 'true' : 'false');
       btn.title = isHidden ? 'Designer comments: Hidden (click or press C to show)' : 'Designer comments: Visible (click or press C to hide)';
     }
   }
@@ -1250,14 +1314,32 @@
 
   /* theme + panels + simple view */
   var root = document.documentElement;
-  function toggleTheme() {
-    var t = root.getAttribute('data-theme');
-    var dark = t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    root.setAttribute('data-theme', dark ? 'light' : 'dark');
-  }
   var themeBtn = document.getElementById('themeBtn');
-  if (themeBtn) themeBtn.onclick = toggleTheme;
   var themeBtnTop = document.getElementById('themeBtnTop');
+  function isDarkTheme() {
+    var t = root.getAttribute('data-theme');
+    return t === 'dark' || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  function syncThemeButtons() {
+    var dark = isDarkTheme();
+    var nextLabel = dark ? 'Switch to light theme' : 'Switch to dark theme';
+    [themeBtn, themeBtnTop].forEach(function (b) {
+      if (!b) return;
+      b.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      b.setAttribute('aria-label', nextLabel);
+      b.setAttribute('title', nextLabel);
+    });
+  }
+  function toggleTheme() {
+    root.setAttribute('data-theme', isDarkTheme() ? 'light' : 'dark');
+    syncThemeButtons();
+  }
+  syncThemeButtons();
+  if (window.matchMedia) {
+    var mql = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mql.addEventListener) mql.addEventListener('change', syncThemeButtons);
+  }
+  if (themeBtn) themeBtn.onclick = toggleTheme;
   if (themeBtnTop) themeBtnTop.onclick = toggleTheme;
   function setLayersOpen(open) {
     var l = document.getElementById('layers');
